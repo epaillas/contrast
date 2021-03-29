@@ -39,6 +39,10 @@ def tpcf(
   set of points for a cross-correlation function.
   '''
 
+  # check if files exist
+  if not path.isfile(data_filename1):
+    sys.exit('{} not found.'.format(data_filename1))
+
   if data_filename2 == None:
     data_filename2 = data_filename1
 
@@ -96,6 +100,10 @@ def tpcf_2d(
   data_filename2 (optional): name of text file containing second 
   set of points for a cross-correlation function.
   '''
+
+  # check if files exist
+  if not path.isfile(data_filename1):
+    sys.exit('{} not found.'.format(data_filename1))
 
   if data_filename2 == None:
     data_filename2 = data_filename1
