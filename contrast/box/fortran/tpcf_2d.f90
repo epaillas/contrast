@@ -25,7 +25,7 @@ program tpcf
   character(len=500) :: data_filename, data_filename_2, output_filename
   character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char, box_char
 
-  logical :: debug = .true.
+  logical :: debug = .false.
   
   if (debug) then
     if (iargc() .lt. 8) then
