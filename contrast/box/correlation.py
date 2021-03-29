@@ -57,7 +57,7 @@ def tpcf(
 
   log_filename = '{}.log'.format(output_filename)
   log = open(log_filename, 'w+')
-  subprocess.call(cmd, stdout=log_filename, stderr=log_filename)
+  subprocess.call(cmd, stdout=log, stderr=log)
 
   # open output file
   data = np.genfromtxt(output_filename)
@@ -121,7 +121,7 @@ def tpcf_2d(
 
   log_filename = '{}.log'.format(output_filename)
   log = open(log_filename, 'w+')
-  subprocess.call(cmd, stdout=log_filename, stderr=log_filename)
+  subprocess.call(cmd, stdout=log, stderr=log)
 
   # open output file
   data = np.genfromtxt(output_filename)
