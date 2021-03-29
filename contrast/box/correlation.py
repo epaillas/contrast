@@ -113,6 +113,8 @@ def tpcf_2d(
   binpath = path.join(path.dirname(__file__),
   'bin', 'tpcf_2d.exe')
 
+  print(binpath)
+
   cmd = [
     binpath, data_filename1, data_filename2,
     output_filename, str(box_size), str(dim1_min),
