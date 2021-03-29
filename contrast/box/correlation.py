@@ -55,7 +55,9 @@ def tpcf(
     str(dim1_max), str(dim1_nbin), str(ngrid)
   ]
 
-  subprocess.call(cmd)
+  log_filename = '{}.log'format(output_filename)
+  log = open(log_filename, 'w+')
+  subprocess.call(cmd, stdout=log_filename, stderr=log_filename)
 
   # open output file
   data = np.genfromtxt(output_filename)
@@ -117,7 +119,9 @@ def tpcf_2d(
     str(dim1_max), str(dim1_nbin), str(ngrid)
   ]
 
-  subprocess.call(cmd)
+  log_filename = '{}.log'format(output_filename)
+  log = open(log_filename, 'w+')
+  subprocess.call(cmd, stdout=log_filename, stderr=log_filename)
 
   # open output file
   data = np.genfromtxt(output_filename)
