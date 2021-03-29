@@ -41,7 +41,7 @@ def tpcf(
 
   # check if files exist
   if not path.isfile(data_filename1):
-    sys.exit('{} not found.'.format(data_filename1))
+    raise FileNotFoundError('{} does not exist.'.format(data_filename1))
 
   if data_filename2 == None:
     data_filename2 = data_filename1
@@ -103,7 +103,7 @@ def tpcf_2d(
 
   # check if files exist
   if not path.isfile(data_filename1):
-    sys.exit('{} not found.'.format(data_filename1))
+    raise FileNotFoundError('{} does not exist.'.format(data_filename1))
 
   if data_filename2 == None:
     data_filename2 = data_filename1
