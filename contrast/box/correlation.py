@@ -7,6 +7,7 @@ def tpcf(
   data_filename1, output_filename,
   box_size, dim1_min, dim1_max,
   dim1_nbin, ngrid, data_filename2=None, 
+  nthreads=1
 ):
   '''
   Two-point cross-correlation function between
@@ -37,6 +38,9 @@ def tpcf(
 
   data_filename2 (optional): name of text file containing second 
   set of points for a cross-correlation function.
+
+  nthreads (optional): number of threads to use while running the 
+  algorithm.
   '''
 
   # check if files exist
