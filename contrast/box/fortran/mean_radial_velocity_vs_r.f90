@@ -215,7 +215,6 @@ program mean_radial_velocity_vs_r
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
-                r = (/ disx, disy, disz /)
 
                 if (has_velocity) then
                   velx = tracers(4, ii) - centres(4, i)
@@ -227,8 +226,7 @@ program mean_radial_velocity_vs_r
                   velz = tracers(6, ii)
                 end if
 
-                vel = (/ velx, vely, velz /)
-                vr = dot_product(vel, r) / dis
+                vr = (velx * disx + vely * disy + velz * disz) / dis
 
                 rind = int((dis - dim1_min) / rwidth + 1)
                 DD_i(i, rind) = DD_i(i, rind) + 1
