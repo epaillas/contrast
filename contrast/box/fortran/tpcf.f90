@@ -181,6 +181,7 @@ program tpcf
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
     !$OMP ix, iy, iz, ix2, iy2, iz2, disx, disy, disz, dis, dis2, rind)
     do i = 1, ncentres
+      write(*,*) i
       ipx = int(centres(1, i) / rgrid + 1.)
       ipy = int(centres(2, i) / rgrid + 1.)
       ipz = int(centres(3, i) / rgrid + 1.)
