@@ -1,4 +1,5 @@
 program tpcf
+    use OMP_LIB
     implicit none
     
     real*8 :: rgrid, vol, rhomean
@@ -13,6 +14,7 @@ program tpcf
     integer*8 :: ipx, ipy, ipz, ndif
     integer*8 :: ngrid
     integer*8 :: end, beginning, rate
+    integer*4 :: nthreads
     
     integer*8, dimension(:, :, :), allocatable :: lirst, nlirst
     integer*8, dimension(:), allocatable :: ll
@@ -20,15 +22,16 @@ program tpcf
     real*8, allocatable, dimension(:,:)  :: tracers, centres
     real*8, dimension(:), allocatable :: DD, delta
     real*8, dimension(:), allocatable :: rbin, rbin_edges
+    real*8, dimension(:, :), allocatable :: DD_i
   
     character(20), external :: str
-    character(len=500) :: data_filename, data_filename_2, output_filename
+    character(len=500) :: data_filename, data_filename_2, output_filename, nthreads_char
     character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char, box_char
 
-    logical :: debug = .false.
+    logical :: debug = .true.
     
     if (debug) then
-      if (iargc() .lt. 8) then
+      if (iargc() .lt. 9) then
           write(*,*) 'Some arguments are missing.'
           write(*,*) '1) data_filename'
           write(*,*) '2) data_filename_2'
@@ -38,6 +41,7 @@ program tpcf
           write(*,*) '6) dim1_max'
           write(*,*) '7) dim1_nbin'
           write(*,*) '8) ngrid'
+          write(*,*) '9) nthreads'
           write(*,*) ''
           stop
         end if
@@ -53,12 +57,14 @@ program tpcf
     call get_command_argument(number=6, value=dim1_max_char)
     call get_command_argument(number=7, value=dim1_nbin_char)
     call get_command_argument(number=8, value=ngrid_char)
+    call get_command_argument(number=9, value=nthreads_char)
     
     read(box_char, *) boxsize
     read(dim1_min_char, *) dim1_min
     read(dim1_max_char, *) dim1_max
     read(dim1_nbin_char, *) dim1_nbin
     read(ngrid_char, *) ngrid
+    read(nthreads_char, *) nthreads
 
     if (debug) then
       write(*,*) '-----------------------'
@@ -73,6 +79,7 @@ program tpcf
       write(*, *) 'dim1_max: ', trim(dim1_max_char), ' Mpc'
       write(*, *) 'dim1_nbin: ', trim(dim1_nbin_char)
       write(*, *) 'ngrid: ', trim(ngrid_char)
+      write(*, *) 'nthreads: ', trim(nthreads_char)
       write(*,*) ''
     end if
 
@@ -102,6 +109,7 @@ program tpcf
     allocate(rbin(dim1_nbin))
     allocate(rbin_edges(dim1_nbin + 1))
     allocate(DD(dim1_nbin))
+    allocate(DD_i(ncentres, dim1_nbin))
     allocate(delta(dim1_nbin))
     
     rwidth = (dim1_max - dim1_min) / dim1_nbin
@@ -159,11 +167,19 @@ program tpcf
     end if
     
     DD = 0
+    DD_i = 0
     delta = 0
     dim1_min2 = dim1_min ** 2
     dim1_max2 = dim1_max ** 2
     ndif = int(dim1_max / rgrid + 1.)
-    
+
+    call OMP_SET_NUM_THREADS(nthreads)
+    if (debug) then
+      write(*, *) 'Maximum number of threads: ', OMP_GET_MAX_THREADS()
+    end if
+      
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
+    !$OMP ix, iy, iz, ix2, iy2, iz2, disx, disy, disz, dis, dis2, rind)
     do i = 1, ncentres
       ipx = int(centres(1, i) / rgrid + 1.)
       ipy = int(centres(2, i) / rgrid + 1.)
@@ -205,7 +221,7 @@ program tpcf
                 if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                   dis = sqrt(dis2)
                   rind = int((dis - dim1_min) / rwidth + 1)
-                  DD(rind) = DD(rind) + 1
+                  DD_i(i, rind) = DD_i(i, rind) + 1
                 end if
     
                 if(ii.eq.lirst(ix2,iy2,iz2)) exit
@@ -216,8 +232,10 @@ program tpcf
         end do
       end do
     end do
+    !$OMP END PARALLEL DO
   
     do i = 1, dim1_nbin
+      DD(i) = SUM(DD_i(:, i))
       vol = 4./3 * pi * (rbin_edges(i + 1) ** 3 - rbin_edges(i) ** 3)
       delta(i) = DD(i) / (vol * rhomean * ncentres) - 1
     end do
