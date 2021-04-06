@@ -56,7 +56,8 @@ def tpcf(
   cmd = [
     binpath, data_filename1, data_filename2,
     output_filename, str(box_size), str(dim1_min),
-    str(dim1_max), str(dim1_nbin), str(ngrid)
+    str(dim1_max), str(dim1_nbin), str(ngrid),
+    str(nthreads)
   ]
 
   log_filename = '{}.log'.format(output_filename)
