@@ -181,11 +181,10 @@ program mean_radial_velocity_vs_r
     ipy = int(centres(2, i) / rgrid + 1.)
     ipz = int(centres(3, i) / rgrid + 1.)
 
-    ndif = int(dim1_max / rgrid + 1.)
-  
     do ix = ipx - ndif, ipx + ndif
       do iy = ipy - ndif, ipy + ndif
         do iz = ipz - ndif, ipz + ndif
+          if ((ix - ipx)**2 + (iy - ipy)**2 + (iz - ipz)**2 .gt. (ndif + 1)**2) cycle
   
           ix2 = ix
           iy2 = iy
