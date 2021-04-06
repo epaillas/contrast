@@ -28,10 +28,10 @@ program mean_radial_velocity_vs_r
   logical :: debug = .true.
   
   character(20), external :: str
-  character(len=500) :: data_filename, data_filename_2, output_filename
+  character(len=500) :: data_filename, data_filename_2, output_filename, nthreads_char
   character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char, box_char
   
-  if (iargc() .ne. 8) then
+  if (iargc() .ne. 9) then
       write(*,*) 'Some arguments are missing.'
       write(*,*) '1) data_filename'
       write(*,*) '2) data_filename_2'
@@ -41,6 +41,7 @@ program mean_radial_velocity_vs_r
       write(*,*) '6) dim1_max'
       write(*,*) '7) dim1_nbin'
       write(*,*) '8) ngrid'
+      write(*,*) '9) nthreads'
       write(*,*) ''
       stop
     end if
@@ -53,15 +54,17 @@ program mean_radial_velocity_vs_r
   call getarg(6, dim1_max_char)
   call getarg(7, dim1_nbin_char)
   call getarg(8, ngrid_char)
+  call getarg(9, nthreads_char)
   
   read(box_char, *) boxsize
   read(dim1_min_char, *) dim1_min
   read(dim1_max_char, *) dim1_max
   read(dim1_nbin_char, *) dim1_nbin
   read(ngrid_char, *) ngrid
+  read(nthreads_char, *) nthreads
   
   write(*,*) '-----------------------'
-  write(*,*) 'Running CF_monopole.exe'
+  write(*,*) 'Running mean_radial_velocity_vs_r.exe'
   write(*,*) 'input parameters:'
   write(*,*) ''
   write(*, *) 'data_filename: ', trim(data_filename)
@@ -72,6 +75,7 @@ program mean_radial_velocity_vs_r
   write(*, *) 'dim1_max: ', trim(dim1_max_char), ' Mpc'
   write(*, *) 'dim1_nbin: ', trim(dim1_nbin_char)
   write(*, *) 'ngrid: ', trim(ngrid_char)
+  write(*, *) 'nthreads: ', trim(nthreads_char)
   write(*,*) ''
 
   open(10, file=data_filename, status='old', form='unformatted')
