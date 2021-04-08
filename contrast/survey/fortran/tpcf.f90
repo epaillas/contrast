@@ -285,7 +285,7 @@ program tpcf
 
   do i = 1, dim1_nbin
     DD(i) = SUM(DD_i(:, i))
-    RR(i) = SUM(RR_i(:, i)) (nr * 1./ng)
+    RR(i) = SUM(RR_i(:, i)) / (nr * 1./ng)
     delta(i) = DD(i) / RR(i) - 1
   end do
   
