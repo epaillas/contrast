@@ -4,7 +4,7 @@ from os import path
 import numpy as np
 
 def tpcf(
-  data_filename1, randoms_filename, output_filename,
+  data_filename, randoms_filename, output_filename,
   dim1_min, dim1_max, dim1_nbin,
   ngrid, gridmin, gridmax, nthreads=1,
   data_filename2=None
@@ -17,7 +17,7 @@ def tpcf(
 
   Input arguments:
 
-  data_filename1: name of text file containing first
+  data_filename: name of text file containing first
   set of tracers, where the first three columns correspond
   to the positions in cartesian coordinates.
 
@@ -46,20 +46,20 @@ def tpcf(
   '''
 
   # check if files exist
-  if not path.isfile(data_filename1):
-    raise FileNotFoundError('{} does not exist.'.format(data_filename1))
+  if not path.isfile(data_filename):
+    raise FileNotFoundError('{} does not exist.'.format(data_filename))
 
   if data_filename2 == None:
-    data_filename2 = data_filename1
+    data_filename2 = data_filename
 
   binpath = path.join(path.dirname(__file__),
   'bin', 'tpcf.exe')
 
   cmd = [
-    binpath, data_filename1, data_filename2,
-    output_filename, str(box_size), str(dim1_min),
+    binpath, data_filename, data_filename2,
+    randoms_filename,  output_filename, str(dim1_min),
     str(dim1_max), str(dim1_nbin), str(ngrid),
-    str(nthreads)
+    str(gridmin), str(gridmax), str(nthreads)
   ]
 
   log_filename = '{}.log'.format(output_filename)
@@ -75,7 +75,7 @@ def tpcf(
 
 
 def tpcf_2d(
-  data_filename1, output_filename,
+  data_filename, output_filename,
   box_size, dim1_min, dim1_max,
   dim1_nbin, ngrid, data_filename2=None, 
 ):
@@ -87,7 +87,7 @@ def tpcf_2d(
 
   Input arguments:
 
-  data_filename1: name of text file containing first
+  data_filename: name of text file containing first
   set of tracers, where the first three columns correspond
   to the positions in cartesian coordinates.
 
@@ -111,11 +111,11 @@ def tpcf_2d(
   '''
 
   # check if files exist
-  if not path.isfile(data_filename1):
-    raise FileNotFoundError('{} does not exist.'.format(data_filename1))
+  if not path.isfile(data_filename):
+    raise FileNotFoundError('{} does not exist.'.format(data_filename))
 
   if data_filename2 == None:
-    data_filename2 = data_filename1
+    data_filename2 = data_filename
 
   binpath = path.join(path.dirname(__file__),
   'bin', 'tpcf_2d.exe')
@@ -123,7 +123,7 @@ def tpcf_2d(
   print(binpath)
 
   cmd = [
-    binpath, data_filename1, data_filename2,
+    binpath, data_filename, data_filename2,
     output_filename, str(box_size), str(dim1_min),
     str(dim1_max), str(dim1_nbin), str(ngrid)
   ]
@@ -140,7 +140,7 @@ def tpcf_2d(
   return r, corr
 
 def mean_radial_velocity_vs_r(
-  data_filename1, output_filename,
+  data_filename, output_filename,
   box_size, dim1_min, dim1_max,
   dim1_nbin, ngrid, data_filename2=None, 
   nthreads=1
@@ -151,7 +151,7 @@ def mean_radial_velocity_vs_r(
 
   Input arguments:
 
-  data_filename1: name of text file containing first
+  data_filename: name of text file containing first
   set of tracers, where the first three columns correspond
   to the positions in cartesian coordinates.
 
@@ -178,17 +178,17 @@ def mean_radial_velocity_vs_r(
   '''
 
   # check if files exist
-  if not path.isfile(data_filename1):
-    raise FileNotFoundError('{} does not exist.'.format(data_filename1))
+  if not path.isfile(data_filename):
+    raise FileNotFoundError('{} does not exist.'.format(data_filename))
 
   if data_filename2 == None:
-    data_filename2 = data_filename1
+    data_filename2 = data_filename
 
   binpath = path.join(path.dirname(__file__),
   'bin', 'mean_radial_velocity_vs_r.exe')
 
   cmd = [
-    binpath, data_filename1, data_filename2,
+    binpath, data_filename, data_filename2,
     output_filename, str(box_size), str(dim1_min),
     str(dim1_max), str(dim1_nbin), str(ngrid),
     str(nthreads)

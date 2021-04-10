@@ -45,17 +45,18 @@ end module procedures
 
 
 program tpcf
+    use procedures
     use OMP_LIB
     implicit none
     
-    real*8 :: rgrid, disx, disy, disz, dis, dis2
+    real*8 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
     real*8 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2
     
     integer*8 :: ng, nc, nr, dim1_nbin, rind
     integer*8 :: i, ii, ix, iy, iz
     integer*8 :: nrows, ncols
     integer*8 :: ipx, ipy, ipz, ndif
-    integer*8 :: ngrid, gridmin, gridmax
+    integer*8 :: ngrid
     integer*8 :: end, beginning, rate
     integer*4 :: nthreads
     
@@ -292,7 +293,7 @@ program tpcf
 
   do i = 1, dim1_nbin
     DD(i) = SUM(DD_i(:, i))
-    RR(i) = SUM(RR_i(:, i))
+    RR(i) = SUM(RR_i(:, i)) / (nr * 1./ng)
     delta(i) = DD(i) / RR(i) - 1
   end do
   
