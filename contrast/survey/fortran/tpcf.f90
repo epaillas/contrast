@@ -49,7 +49,7 @@ program tpcf
     use OMP_LIB
     implicit none
     
-    real*8 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
+    real*8 :: rgrid, disx, disy, disz, dis2, gridmin, gridmax
     real*8 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2
     
     integer*8 :: ng, nc, nr, dim1_nbin, rind
@@ -250,7 +250,7 @@ program tpcf
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 rind = dim1_nbin + 1
-                do while (dis2 .lt. rbin_edges2(k))
+                do while (dis2 .lt. rbin_edges2(rind))
                   rind = rind - 1
                 end do
                 DD_i(i, rind) = DD_i(i, rind) + weights_tracers(ii)
@@ -274,7 +274,7 @@ program tpcf
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
 
                 rind = dim1_nbin + 1
-                do while (dis2 .lt. rbin_edges2(k))
+                do while (dis2 .lt. rbin_edges2(rind))
                   rind = rind - 1
                 end do
 
