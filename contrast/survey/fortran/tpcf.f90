@@ -227,7 +227,7 @@ program tpcf
   end if
     
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
-  !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
+  !$OMP ix, iy, iz, disx, disy, disz, dis2, rind)
   do i = 1, nc
     ipx = int((centres(1, i) - gridmin) / rgrid + 1.)
     ipy = int((centres(2, i) - gridmin) / rgrid + 1.)
