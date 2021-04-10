@@ -45,18 +45,17 @@ end module procedures
 
 
 program tpcf
-    use procedures
     use OMP_LIB
     implicit none
     
-    real*8 :: rgrid, disx, disy, disz, dis2, gridmin, gridmax
+    real*8 :: rgrid, disx, disy, disz, dis, dis2
     real*8 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2
     
     integer*8 :: ng, nc, nr, dim1_nbin, rind
     integer*8 :: i, ii, ix, iy, iz
     integer*8 :: nrows, ncols
     integer*8 :: ipx, ipy, ipz, ndif
-    integer*8 :: ngrid
+    integer*8 :: ngrid, gridmin, gridmax
     integer*8 :: end, beginning, rate
     integer*4 :: nthreads
     
@@ -65,7 +64,7 @@ program tpcf
     
     real*8, allocatable, dimension(:,:)  :: tracers, centres, randoms
     real*8, dimension(:), allocatable :: DD, RR, delta, weights_tracers, weights_randoms
-    real*8, dimension(:), allocatable :: rbin, rbin_edges, rbin_edges2
+    real*8, dimension(:), allocatable :: rbin, rbin_edges
     real*8, dimension(:, :), allocatable :: DD_i, RR_i
   
     character(20), external :: str
@@ -196,7 +195,6 @@ program tpcf
 
   allocate(rbin(dim1_nbin))
   allocate(rbin_edges(dim1_nbin + 1))
-  allocate(rbin_edges2(dim1_nbin + 1))
   allocate(DD(dim1_nbin))
   allocate(DD_i(nc, dim1_nbin))
   allocate(RR(dim1_nbin))
@@ -210,8 +208,7 @@ program tpcf
   do i = 1, dim1_nbin
     rbin(i) = rbin_edges(i+1)-rwidth/2.
   end do
-
-  rbin_edges2 = rbin_edges ** 2
+  
   DD = 0
   DD_i = 0
   RR = 0
@@ -227,7 +224,7 @@ program tpcf
   end if
     
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
-  !$OMP ix, iy, iz, disx, disy, disz, dis2, rind)
+  !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
   do i = 1, nc
     ipx = int((centres(1, i) - gridmin) / rgrid + 1.)
     ipy = int((centres(2, i) - gridmin) / rgrid + 1.)
@@ -249,10 +246,8 @@ program tpcf
               dis2 = disx * disx + disy * disy + disz * disz
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
-                rind = dim1_nbin + 1
-                do while (dis2 .lt. rbin_edges2(rind))
-                  rind = rind - 1
-                end do
+                dis = sqrt(dis2)
+                rind = int((dis - dim1_min) / rwidth + 1)
                 DD_i(i, rind) = DD_i(i, rind) + weights_tracers(ii)
               end if
   
@@ -272,12 +267,8 @@ program tpcf
               dis2 = disx * disx + disy * disy + disz * disz
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
-
-                rind = dim1_nbin + 1
-                do while (dis2 .lt. rbin_edges2(rind))
-                  rind = rind - 1
-                end do
-
+                dis = sqrt(dis2)
+                rind = int((dis - dim1_min) / rwidth + 1)
                 RR_i(i, rind) = RR_i(i, rind) + weights_randoms(ii)
               end if
   
@@ -293,7 +284,7 @@ program tpcf
 
   do i = 1, dim1_nbin
     DD(i) = SUM(DD_i(:, i))
-    RR(i) = SUM(RR_i(:, i)) / (nr * 1./ng)
+    RR(i) = SUM(RR_i(:, i))
     delta(i) = DD(i) / RR(i) - 1
   end do
   
