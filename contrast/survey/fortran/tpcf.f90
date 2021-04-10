@@ -64,7 +64,7 @@ program tpcf
     
     real*8, allocatable, dimension(:,:)  :: tracers, centres, randoms
     real*8, dimension(:), allocatable :: DD, RR, delta, weights_tracers, weights_randoms
-    real*8, dimension(:), allocatable :: rbin, rbin_edges
+    real*8, dimension(:), allocatable :: rbin, rbin_edges, rbin_edges2
     real*8, dimension(:, :), allocatable :: DD_i, RR_i
   
     character(20), external :: str
@@ -195,6 +195,7 @@ program tpcf
 
   allocate(rbin(dim1_nbin))
   allocate(rbin_edges(dim1_nbin + 1))
+  allocate(rbin_edges2(dim1_nbin + 1))
   allocate(DD(dim1_nbin))
   allocate(DD_i(nc, dim1_nbin))
   allocate(RR(dim1_nbin))
@@ -208,7 +209,8 @@ program tpcf
   do i = 1, dim1_nbin
     rbin(i) = rbin_edges(i+1)-rwidth/2.
   end do
-  
+
+  rbin_edges2 = rbin_edges ** 2
   DD = 0
   DD_i = 0
   RR = 0
@@ -243,11 +245,13 @@ program tpcf
               disy = tracers(2, ii) - centres(2, i)
               disz = tracers(3, ii) - centres(3, i)
 
-              dis2 = disx ** 2 + disy ** 2 + disz ** 2
+              dis2 = disx * disx + disy * disy + disz * disz
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
-                dis = sqrt(dis2)
-                rind = int((dis - dim1_min) / rwidth + 1)
+                rind = dim1_nbin + 1
+                do while (dis2 .lt. rbin_edges2(k))
+                  rind = rind - 1
+                end do
                 DD_i(i, rind) = DD_i(i, rind) + weights_tracers(ii)
               end if
   
@@ -264,11 +268,15 @@ program tpcf
               disy = randoms(2, ii) - centres(2, i)
               disz = randoms(3, ii) - centres(3, i)
 
-              dis2 = disx ** 2 + disy ** 2 + disz ** 2
+              dis2 = disx * disx + disy * disy + disz * disz
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
-                dis = sqrt(dis2)
-                rind = int((dis - dim1_min) / rwidth + 1)
+
+                rind = dim1_nbin + 1
+                do while (dis2 .lt. rbin_edges2(k))
+                  rind = rind - 1
+                end do
+
                 RR_i(i, rind) = RR_i(i, rind) + weights_randoms(ii)
               end if
   
