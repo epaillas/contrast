@@ -45,6 +45,7 @@ end module procedures
 
 
 program tpcf
+    use procedures
     use OMP_LIB
     implicit none
     
