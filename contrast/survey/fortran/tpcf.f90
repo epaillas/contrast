@@ -63,7 +63,8 @@ program tpcf
     integer*8, dimension(:), allocatable :: ll_tracers, ll_randoms
     
     real*8, allocatable, dimension(:,:)  :: tracers, centres, randoms
-    real*8, dimension(:), allocatable :: DD, RR, delta, weights_tracers, weights_randoms
+    real*8, dimension(:), allocatable :: DD, RR, delta
+    real*8, dimension(:), allocatable :: weights_tracers, weights_centres, weights_randoms
     real*8, dimension(:), allocatable :: rbin, rbin_edges
     real*8, dimension(:, :), allocatable :: DD_i, RR_i
   
@@ -126,8 +127,9 @@ program tpcf
       write(*, *) 'output_filename: ', trim(output_filename)
       write(*, *) 'dim1_min: ', trim(dim1_min_char), ' Mpc'
       write(*, *) 'dim1_max: ', trim(dim1_max_char), ' Mpc'
-      write(*, *) 'gridmin_max: ', trim(dim1_max_char), ' Mpc'
       write(*, *) 'dim1_nbin: ', trim(dim1_nbin_char)
+      write(*, *) 'gridmin: ', trim(gridmin_char), ' Mpc'
+      write(*, *) 'gridmax: ', trim(gridmax_char), ' Mpc'
       write(*, *) 'ngrid: ', trim(ngrid_char)
       write(*, *) 'nthreads: ', trim(nthreads_char)
       write(*,*) ''
@@ -150,19 +152,28 @@ program tpcf
     end if
     if (debug) then
       write(*,*) 'ntracers dim: ', size(tracers, dim=1), size(tracers, dim=2)
-      write(*,*) 'tracers(min), tracers(max) = ', minval(tracers(:,:)), maxval(tracers(:,:))
+      write(*,*) 'tracers(min, max) = ', minval(tracers(:,:)), maxval(tracers(:,:))
+      write(*,*) 'weights_tracers(min, max) = ', minval(weights_tracers), maxval(weights_tracers)
     end if
 
     open(11, file=data_filename_2, status='old', form='unformatted')
     read(11) nrows
     read(11) ncols
     allocate(centres(ncols, nrows))
+    allocate(weights_centres(nrows))
     read(11) centres
     close(11)
     nc = nrows
+    if (ncols .eq. 4) then
+      weights_centres = centres(4, :)
+      if (debug) write(*,*) 'Centres file has weight information.'
+    else
+      weights_centres = 1.0
+    end if
     if (debug) then
       write(*,*) 'ncentres dim: ', size(centres, dim=1), size(centres, dim=2)
       write(*,*) 'centres(min), tracers(max) = ', minval(centres(:,:)), maxval(centres(:,:))
+      write(*,*) 'weights_centres(min, max) = ', minval(weights_centres), maxval(weights_centres)
     end if
 
     ! read random catalogue
@@ -175,7 +186,7 @@ program tpcf
   close(11)
   nr = nrows
   if (ncols .eq. 4) then
-    weights_randoms = tracers(4, :)
+    weights_randoms = randoms(4, :)
     if (debug) write(*,*) 'Tracer file has weight information.'
   else
     weights_randoms = 1.0
@@ -183,6 +194,7 @@ program tpcf
   if (debug) then 
     write(*,*) 'nrandoms dim: ', size(randoms, dim=1), size(randoms, dim=2)
     write(*,*) 'randoms(min), randoms(max) = ', minval(randoms(:,:)), maxval(randoms(:,:))
+    write(*,*) 'weights_randoms(min, max) = ', minval(weights_randoms), maxval(weights_randoms)
   end if
 
   ! construct linked lists for tracers and randoms
@@ -248,7 +260,7 @@ program tpcf
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 rind = int((dis - dim1_min) / rwidth + 1)
-                DD_i(i, rind) = DD_i(i, rind) + weights_tracers(ii)
+                DD_i(i, rind) = DD_i(i, rind) + weights_centres(i) * weights_tracers(ii)
               end if
   
               if(ii .eq. lirst_tracers(ix, iy, iz)) exit
@@ -269,7 +281,7 @@ program tpcf
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 rind = int((dis - dim1_min) / rwidth + 1)
-                RR_i(i, rind) = RR_i(i, rind) + weights_randoms(ii)
+                RR_i(i, rind) = RR_i(i, rind) + weights_centres(i) * weights_randoms(ii)
               end if
   
               if (ii .eq. lirst_randoms(ix, iy, iz)) exit
