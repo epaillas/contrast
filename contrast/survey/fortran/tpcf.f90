@@ -72,6 +72,7 @@ program tpcf
     character(len=500) :: data_filename, data_filename_2, output_filename, randoms_filename
     character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char
     character(len=10) :: nthreads_char, gridmin_char, gridmax_char
+    character(len=10) :: estimator = 'DP'
 
     logical :: debug = .true.
     
@@ -260,7 +261,7 @@ program tpcf
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 rind = int((dis - dim1_min) / rwidth + 1)
-                DD_i(i, rind) = DD_i(i, rind) + weights_centres(i) * weights_tracers(ii)
+                DD_i(i, rind) = DD_i(i, rind) + weights_tracers(ii)
               end if
   
               if(ii .eq. lirst_tracers(ix, iy, iz)) exit
@@ -281,7 +282,7 @@ program tpcf
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 rind = int((dis - dim1_min) / rwidth + 1)
-                RR_i(i, rind) = RR_i(i, rind) + weights_centres(i) * weights_randoms(ii)
+                RR_i(i, rind) = RR_i(i, rind) + weights_randoms(ii)
               end if
   
               if (ii .eq. lirst_randoms(ix, iy, iz)) exit
@@ -294,11 +295,19 @@ program tpcf
   end do
   !$OMP END PARALLEL DO
 
+  ! Normalize data and random counts
   do i = 1, dim1_nbin
-    DD(i) = SUM(DD_i(:, i))
-    RR(i) = SUM(RR_i(:, i)) / (nr * 1./ng)
-    delta(i) = DD(i) / RR(i) - 1
+    DD(i) = SUM(DD_i(:, i)) / SUM(weights_tracers)
+    RR(i) = SUM(RR_i(:, i)) / SUM(weights_randoms)
   end do
+
+  ! Calculate density contrast
+  if (estimator .eq. 'DP') then
+    delta = DD / RR - 1
+  else
+    write(*,*) 'Estimator for the correlation function was not recognized.'
+    stop
+  end if
   
   if (debug) then
     write(*,*) ''
