@@ -50,7 +50,7 @@ program tpcf
     implicit none
     
     real*8 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
-    real*8 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2
+    real*8 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2, norm
     
     integer*8 :: ng, nc, nr, dim1_nbin, rind
     integer*8 :: i, ii, ix, iy, iz
@@ -63,10 +63,10 @@ program tpcf
     integer*8, dimension(:), allocatable :: ll_tracers, ll_randoms
     
     real*8, allocatable, dimension(:,:)  :: tracers, centres, randoms
-    real*8, dimension(:), allocatable :: DD, RR, delta
+    real*8, dimension(:), allocatable :: DD, DR, delta
     real*8, dimension(:), allocatable :: weights_tracers, weights_centres, weights_randoms
     real*8, dimension(:), allocatable :: rbin, rbin_edges
-    real*8, dimension(:, :), allocatable :: DD_i, RR_i
+    real*8, dimension(:, :), allocatable :: DD_i, DR_i
   
     character(20), external :: str
     character(len=500) :: data_filename, data_filename_2, output_filename, randoms_filename
@@ -210,8 +210,8 @@ program tpcf
   allocate(rbin_edges(dim1_nbin + 1))
   allocate(DD(dim1_nbin))
   allocate(DD_i(nc, dim1_nbin))
-  allocate(RR(dim1_nbin))
-  allocate(RR_i(nc, dim1_nbin))
+  allocate(DR(dim1_nbin))
+  allocate(DR_i(nc, dim1_nbin))
   allocate(delta(dim1_nbin))
   
   rwidth = (dim1_max - dim1_min) / dim1_nbin
@@ -224,8 +224,8 @@ program tpcf
   
   DD = 0
   DD_i = 0
-  RR = 0
-  RR_i = 0
+  DR = 0
+  DR_i = 0
   delta = 0
   dim1_min2 = dim1_min ** 2
   dim1_max2 = dim1_max ** 2
@@ -261,7 +261,7 @@ program tpcf
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 rind = int((dis - dim1_min) / rwidth + 1)
-                DD_i(i, rind) = DD_i(i, rind) + weights_tracers(ii)
+                DD_i(i, rind) = DD_i(i, rind) + weights_centres(i) * weights_tracers(ii)
               end if
   
               if(ii .eq. lirst_tracers(ix, iy, iz)) exit
@@ -282,7 +282,7 @@ program tpcf
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 rind = int((dis - dim1_min) / rwidth + 1)
-                RR_i(i, rind) = RR_i(i, rind) + weights_randoms(ii)
+                DR_i(i, rind) = DR_i(i, rind) + weights_centres(i) * weights_randoms(ii)
               end if
   
               if (ii .eq. lirst_randoms(ix, iy, iz)) exit
@@ -295,15 +295,11 @@ program tpcf
   end do
   !$OMP END PARALLEL DO
 
-  ! Normalize data and random counts
-  do i = 1, dim1_nbin
-    DD(i) = SUM(DD_i(:, i)) / SUM(weights_tracers)
-    RR(i) = SUM(RR_i(:, i)) / SUM(weights_randoms)
-  end do
+  norm = SUM(weights_randoms) / SUM(weights_tracers)
 
   ! Calculate density contrast
   if (estimator .eq. 'DP') then
-    delta = DD / RR - 1
+    delta = norm * (DD / DR) - 1
   else
     write(*,*) 'Estimator for the correlation function was not recognized.'
     stop
