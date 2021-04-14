@@ -62,7 +62,7 @@ program tpcf
   integer*8, dimension(:, :, :), allocatable :: lirst_data, lirst_randoms
   integer*8, dimension(:), allocatable :: ll_data, ll_randoms
   
-  real*8, allocatable, dimension(:,:)  :: data, centres, randoms
+  real*8, allocatable, dimension(:,:)  :: data, randoms
   real*8, dimension(:), allocatable :: DD, DR, delta
   real*8, dimension(:), allocatable :: weights_data, weights_randoms
   real*8, dimension(:), allocatable :: rbin, rbin_edges
@@ -165,7 +165,7 @@ program tpcf
   nr = nrows
   if (ncols .eq. 4) then
     weights_randoms = randoms(4, :)
-    if (debug) write(*,*) 'Tracer file has weight information.'
+    if (debug) write(*,*) 'Random file has weight information.'
   else
     weights_randoms = 1.0
   end if
@@ -216,9 +216,9 @@ program tpcf
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
   !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
   do i = 1, ng
-    ipx = int((centres(1, i) - gridmin) / rgrid + 1.)
-    ipy = int((centres(2, i) - gridmin) / rgrid + 1.)
-    ipz = int((centres(3, i) - gridmin) / rgrid + 1.)
+    ipx = int((data(1, i) - gridmin) / rgrid + 1.)
+    ipy = int((data(2, i) - gridmin) / rgrid + 1.)
+    ipz = int((data(3, i) - gridmin) / rgrid + 1.)
 
     do ix = ipx - ndif, ipx + ndif, 1
       do iy = ipy - ndif, ipy + ndif, 1
@@ -229,9 +229,9 @@ program tpcf
           if (ii .ne. 0) then
             do
               ii = ll_data(ii)
-              disx = data(1, ii) - centres(1, i)
-              disy = data(2, ii) - centres(2, i)
-              disz = data(3, ii) - centres(3, i)
+              disx = data(1, ii) - data(1, i)
+              disy = data(2, ii) - data(2, i)
+              disz = data(3, ii) - data(3, i)
 
               dis2 = disx * disx + disy * disy + disz * disz
 
@@ -250,9 +250,9 @@ program tpcf
           if (ii .ne. 0) then
             do
               ii = ll_randoms(ii)
-              disx = randoms(1, ii) - centres(1, i)
-              disy = randoms(2, ii) - centres(2, i)
-              disz = randoms(3, ii) - centres(3, i)
+              disx = randoms(1, ii) - data(1, i)
+              disy = randoms(2, ii) - data(2, i)
+              disz = randoms(3, ii) - data(3, i)
 
               dis2 = disx * disx + disy * disy + disz * disz
 
