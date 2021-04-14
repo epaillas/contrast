@@ -278,6 +278,9 @@ program tpcf
     DR(i) = SUM(DR_i(:, i))
   end do
 
+  write(*,*) SUM(weights_randoms) / SUM(weights_data)
+  write(*,*) (ng * nr) / (ng * (ng - 1) / 2.)
+
   ! Normalize pair counts
   DD = DD * 1./(ng * (ng - 1) / 2.)
   DR = DR * 1./(ng * nr)
