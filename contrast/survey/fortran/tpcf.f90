@@ -212,6 +212,9 @@ program tpcf
   if (debug) then
     write(*, *) 'Maximum number of threads: ', OMP_GET_MAX_THREADS()
   end if
+
+  write(*,*) SUM(weights_randoms) / SUM(weights_data)
+  write(*,*) (ng * nr) / (ng * (ng - 1) / 2.)
     
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
   !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
@@ -277,9 +280,6 @@ program tpcf
     DD(i) = SUM(DD_i(:, i))
     DR(i) = SUM(DR_i(:, i))
   end do
-
-  write(*,*) SUM(weights_randoms) / SUM(weights_data)
-  write(*,*) (ng * nr) / (ng * (ng - 1) / 2.)
 
   ! Normalize pair counts
   DD = DD * 1./(ng * (ng - 1) / 2.)
