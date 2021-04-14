@@ -6,8 +6,8 @@ import numpy as np
 def tpcf(
   data_filename, randoms_filename, output_filename,
   dim1_min, dim1_max, dim1_nbin,
-  ngrid, gridmin, gridmax, nthreads=1,
-  data_filename2=None
+  ngrid, gridmin, gridmax,
+  nthreads=1
 ):
   '''
   Two-point cross-correlation function between
@@ -38,9 +38,6 @@ def tpcf(
   to speed up calculation. It has to be a divisor of box_size 
   (e.g. 100 for 1000 Mpc/h box, or 128 for a 1024 Mpc/h box).
 
-  data_filename2 (optional): name of text file containing second 
-  set of points for a cross-correlation function.
-
   nthreads (optional): number of threads to use while running the 
   algorithm.
   '''
@@ -49,17 +46,14 @@ def tpcf(
   if not path.isfile(data_filename):
     raise FileNotFoundError('{} does not exist.'.format(data_filename))
 
-  if data_filename2 == None:
-    data_filename2 = data_filename
-
   binpath = path.join(path.dirname(__file__),
   'bin', 'tpcf.exe')
 
   cmd = [
-    binpath, data_filename, data_filename2,
-    randoms_filename,  output_filename, str(dim1_min),
-    str(dim1_max), str(dim1_nbin), str(ngrid),
-    str(gridmin), str(gridmax), str(nthreads)
+    binpath, data_filename, randoms_filename,
+    output_filename, str(dim1_min), str(dim1_max),
+    str(dim1_nbin), str(ngrid), str(gridmin),
+    str(gridmax), str(nthreads)
   ]
 
   log_filename = '{}.log'.format(output_filename)
@@ -119,8 +113,6 @@ def tpcf_2d(
 
   binpath = path.join(path.dirname(__file__),
   'bin', 'tpcf_2d.exe')
-
-  print(binpath)
 
   cmd = [
     binpath, data_filename, data_filename2,

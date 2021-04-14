@@ -45,139 +45,116 @@ end module procedures
 
 
 program tpcf
-    use procedures
-    use OMP_LIB
-    implicit none
-    
-    real*8 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
-    real*8 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2, norm
-    
-    integer*8 :: ng, nc, nr, dim1_nbin, rind
-    integer*8 :: i, ii, ix, iy, iz
-    integer*8 :: nrows, ncols
-    integer*8 :: ngrid, ipx, ipy, ipz, ndif
-    integer*8 :: end, beginning, rate
-    integer*4 :: nthreads
-    
-    integer*8, dimension(:, :, :), allocatable :: lirst_tracers, lirst_randoms
-    integer*8, dimension(:), allocatable :: ll_tracers, ll_randoms
-    
-    real*8, allocatable, dimension(:,:)  :: tracers, centres, randoms
-    real*8, dimension(:), allocatable :: DD, DR, delta
-    real*8, dimension(:), allocatable :: weights_tracers, weights_centres, weights_randoms
-    real*8, dimension(:), allocatable :: rbin, rbin_edges
-    real*8, dimension(:, :), allocatable :: DD_i, DR_i
+  use procedures
+  use OMP_LIB
+  implicit none
   
-    character(20), external :: str
-    character(len=500) :: data_filename, data_filename_2, output_filename, randoms_filename
-    character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char
-    character(len=10) :: nthreads_char, gridmin_char, gridmax_char
-    character(len=10) :: estimator = 'DP'
+  real*8 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
+  real*8 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2
+  
+  integer*8 :: ng, nr, dim1_nbin, rind
+  integer*8 :: i, ii, ix, iy, iz
+  integer*8 :: nrows, ncols
+  integer*8 :: ngrid, ipx, ipy, ipz, ndif
+  integer*8 :: end, beginning, rate
+  integer*4 :: nthreads
+  
+  integer*8, dimension(:, :, :), allocatable :: lirst_data, lirst_randoms
+  integer*8, dimension(:), allocatable :: ll_data, ll_randoms
+  
+  real*8, allocatable, dimension(:,:)  :: data, centres, randoms
+  real*8, dimension(:), allocatable :: DD, DR, delta
+  real*8, dimension(:), allocatable :: weights_data, weights_randoms
+  real*8, dimension(:), allocatable :: rbin, rbin_edges
+  real*8, dimension(:, :), allocatable :: DD_i, DR_i
 
-    logical :: debug = .true.
-    
-    if (debug) then
-      if (iargc() .lt. 11) then
-          write(*,*) 'Some arguments are missing.'
-          write(*,*) '1) data_filename'
-          write(*,*) '2) data_filename_2'
-          write(*,*) '3) random_filename'
-          write(*,*) '4) output_filename'
-          write(*,*) '5) dim1_min'
-          write(*,*) '6) dim1_max'
-          write(*,*) '7) dim1_nbin'
-          write(*,*) '8) ngrid'
-          write(*,*) '9) gridmin'
-          write(*,*) '10) gridmax'
-          write(*,*) '11) nthreads'
-          write(*,*) ''
-          stop
-        end if
+  character(20), external :: str
+  character(len=500) :: data_filename, output_filename, randoms_filename
+  character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char
+  character(len=10) :: nthreads_char, gridmin_char, gridmax_char
+  character(len=10) :: estimator = 'DP'
+
+  logical :: debug = .true.
+  
+  if (debug) then
+    if (iargc() .lt. 10) then
+        write(*,*) 'Some arguments are missing.'
+        write(*,*) '1) data_filename'
+        write(*,*) '2) random_filename'
+        write(*,*) '3) output_filename'
+        write(*,*) '4) dim1_min'
+        write(*,*) '5) dim1_max'
+        write(*,*) '6) dim1_nbin'
+        write(*,*) '7) ngrid'
+        write(*,*) '8) gridmin'
+        write(*,*) '9) gridmax'
+        write(*,*) '10) nthreads'
+        write(*,*) ''
+        stop
       end if
+    end if
 
-    call system_clock(beginning, rate)
-      
-    call get_command_argument(number=1, value=data_filename)
-    call get_command_argument(number=2, value=data_filename_2)
-    call get_command_argument(number=3, value=randoms_filename)
-    call get_command_argument(number=4, value=output_filename)
-    call get_command_argument(number=5, value=dim1_min_char)
-    call get_command_argument(number=6, value=dim1_max_char)
-    call get_command_argument(number=7, value=dim1_nbin_char)
-    call get_command_argument(number=8, value=ngrid_char)
-    call get_command_argument(number=9, value=gridmin_char)
-    call get_command_argument(number=10, value=gridmax_char)
-    call get_command_argument(number=11, value=nthreads_char)
+  call system_clock(beginning, rate)
     
-    read(dim1_min_char, *) dim1_min
-    read(dim1_max_char, *) dim1_max
-    read(dim1_nbin_char, *) dim1_nbin
-    read(ngrid_char, *) ngrid
-    read(gridmin_char, *) gridmin
-    read(gridmax_char, *) gridmax
-    read(nthreads_char, *) nthreads
+  call get_command_argument(number=1, value=data_filename)
+  call get_command_argument(number=2, value=randoms_filename)
+  call get_command_argument(number=3, value=output_filename)
+  call get_command_argument(number=4, value=dim1_min_char)
+  call get_command_argument(number=5, value=dim1_max_char)
+  call get_command_argument(number=6, value=dim1_nbin_char)
+  call get_command_argument(number=7, value=ngrid_char)
+  call get_command_argument(number=8, value=gridmin_char)
+  call get_command_argument(number=9, value=gridmax_char)
+  call get_command_argument(number=10, value=nthreads_char)
+  
+  read(dim1_min_char, *) dim1_min
+  read(dim1_max_char, *) dim1_max
+  read(dim1_nbin_char, *) dim1_nbin
+  read(ngrid_char, *) ngrid
+  read(gridmin_char, *) gridmin
+  read(gridmax_char, *) gridmax
+  read(nthreads_char, *) nthreads
 
-    if (debug) then
-      write(*,*) '-----------------------'
-      write(*,*) 'Running tpcf.exe'
-      write(*,*) 'input parameters:'
-      write(*,*) ''
-      write(*, *) 'data_filename: ', trim(data_filename)
-      write(*, *) 'data_filename_2: ', trim(data_filename_2)
-      write(*, *) 'randoms_filename: ', trim(randoms_filename)
-      write(*, *) 'output_filename: ', trim(output_filename)
-      write(*, *) 'dim1_min: ', trim(dim1_min_char), ' Mpc'
-      write(*, *) 'dim1_max: ', trim(dim1_max_char), ' Mpc'
-      write(*, *) 'dim1_nbin: ', trim(dim1_nbin_char)
-      write(*, *) 'gridmin: ', trim(gridmin_char), ' Mpc'
-      write(*, *) 'gridmax: ', trim(gridmax_char), ' Mpc'
-      write(*, *) 'ngrid: ', trim(ngrid_char)
-      write(*, *) 'nthreads: ', trim(nthreads_char)
-      write(*,*) ''
-    end if
+  if (debug) then
+    write(*,*) '-----------------------'
+    write(*,*) 'Running tpcf.exe'
+    write(*,*) 'input parameters:'
+    write(*,*) ''
+    write(*, *) 'data_filename: ', trim(data_filename)
+    write(*, *) 'randoms_filename: ', trim(randoms_filename)
+    write(*, *) 'output_filename: ', trim(output_filename)
+    write(*, *) 'dim1_min: ', trim(dim1_min_char), ' Mpc'
+    write(*, *) 'dim1_max: ', trim(dim1_max_char), ' Mpc'
+    write(*, *) 'dim1_nbin: ', trim(dim1_nbin_char)
+    write(*, *) 'gridmin: ', trim(gridmin_char), ' Mpc'
+    write(*, *) 'gridmax: ', trim(gridmax_char), ' Mpc'
+    write(*, *) 'ngrid: ', trim(ngrid_char)
+    write(*, *) 'nthreads: ', trim(nthreads_char)
+    write(*,*) ''
+  end if
 
-    ! read tracers catalogue
-    open(10, file=data_filename, status='old', form='unformatted')
-    read(10) nrows
-    read(10) ncols
-    allocate(tracers(ncols, nrows))
-    allocate(weights_tracers(nrows))
-    read(10) tracers
-    close(10)
-    ng = nrows
-    if (ncols .eq. 4) then
-      weights_tracers = tracers(4, :)
-      if (debug) write(*,*) 'Tracer file has weight information.'
-    else
-      weights_tracers = 1.0
-    end if
-    if (debug) then
-      write(*,*) 'ntracers dim: ', size(tracers, dim=1), size(tracers, dim=2)
-      write(*,*) 'tracers(min, max) = ', minval(tracers(:,:)), maxval(tracers(:,:))
-      write(*,*) 'weights_tracers(min, max) = ', minval(weights_tracers), maxval(weights_tracers)
-    end if
+  ! read data catalogue
+  open(10, file=data_filename, status='old', form='unformatted')
+  read(10) nrows
+  read(10) ncols
+  allocate(data(ncols, nrows))
+  allocate(weights_data(nrows))
+  read(10) data
+  close(10)
+  ng = nrows
+  if (ncols .eq. 4) then
+    weights_data = data(4, :)
+    if (debug) write(*,*) 'Tracer file has weight information.'
+  else
+    weights_data = 1.0
+  end if
+  if (debug) then
+    write(*,*) 'ndata dim: ', size(data, dim=1), size(data, dim=2)
+    write(*,*) 'data(min, max) = ', minval(data(:,:)), maxval(data(:,:))
+    write(*,*) 'weights_data(min, max) = ', minval(weights_data), maxval(weights_data)
+  end if
 
-    open(11, file=data_filename_2, status='old', form='unformatted')
-    read(11) nrows
-    read(11) ncols
-    allocate(centres(ncols, nrows))
-    allocate(weights_centres(nrows))
-    read(11) centres
-    close(11)
-    nc = nrows
-    if (ncols .eq. 4) then
-      weights_centres = centres(4, :)
-      if (debug) write(*,*) 'Centres file has weight information.'
-    else
-      weights_centres = 1.0
-    end if
-    if (debug) then
-      write(*,*) 'ncentres dim: ', size(centres, dim=1), size(centres, dim=2)
-      write(*,*) 'centres(min), tracers(max) = ', minval(centres(:,:)), maxval(centres(:,:))
-      write(*,*) 'weights_centres(min, max) = ', minval(weights_centres), maxval(weights_centres)
-    end if
-
-    ! read random catalogue
+  ! read random catalogue
   open(11, file=randoms_filename, status='old', form='unformatted')
   read(11) nrows
   read(11) ncols
@@ -198,22 +175,22 @@ program tpcf
     write(*,*) 'weights_randoms(min, max) = ', minval(weights_randoms), maxval(weights_randoms)
   end if
 
-  ! construct linked lists for tracers and randoms
-  allocate(ll_tracers(ng))
+  ! construct linked lists for data and randoms
+  allocate(ll_data(ng))
   allocate(ll_randoms(nr))
-  allocate(lirst_tracers(ngrid, ngrid, ngrid))
+  allocate(lirst_data(ngrid, ngrid, ngrid))
   allocate(lirst_randoms(ngrid, ngrid, ngrid))
-  call linked_list(tracers, ngrid, gridmin, gridmax, ll_tracers, lirst_tracers, rgrid)
+  call linked_list(data, ngrid, gridmin, gridmax, ll_data, lirst_data, rgrid)
   call linked_list(randoms, ngrid, gridmin, gridmax, ll_randoms, lirst_randoms, rgrid)
 
   allocate(rbin(dim1_nbin))
   allocate(rbin_edges(dim1_nbin + 1))
   allocate(DD(dim1_nbin))
-  allocate(DD_i(nc, dim1_nbin))
+  allocate(DD_i(ng, dim1_nbin))
   allocate(DR(dim1_nbin))
-  allocate(DR_i(nc, dim1_nbin))
+  allocate(DR_i(ng, dim1_nbin))
   allocate(delta(dim1_nbin))
-  
+
   rwidth = (dim1_max - dim1_min) / dim1_nbin
   do i = 1, dim1_nbin + 1
     rbin_edges(i) = dim1_min+(i-1)*rwidth
@@ -221,7 +198,7 @@ program tpcf
   do i = 1, dim1_nbin
     rbin(i) = rbin_edges(i+1)-rwidth/2.
   end do
-  
+
   DD = 0
   DD_i = 0
   DR = 0
@@ -238,7 +215,7 @@ program tpcf
     
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
   !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
-  do i = 1, nc
+  do i = 1, ng
     ipx = int((centres(1, i) - gridmin) / rgrid + 1.)
     ipy = int((centres(2, i) - gridmin) / rgrid + 1.)
     ipz = int((centres(3, i) - gridmin) / rgrid + 1.)
@@ -247,25 +224,25 @@ program tpcf
       do iy = ipy - ndif, ipy + ndif, 1
         do iz = ipz - ndif, ipz + ndif, 1 
           if ((ix - ipx)**2 + (iy - ipy)**2 + (iz - ipz)**2 .gt. (ndif+ 1)**2) cycle
-  
-          ii = lirst_tracers(ix, iy, iz)
+
+          ii = lirst_data(ix, iy, iz)
           if (ii .ne. 0) then
             do
-              ii = ll_tracers(ii)
-              disx = tracers(1, ii) - centres(1, i)
-              disy = tracers(2, ii) - centres(2, i)
-              disz = tracers(3, ii) - centres(3, i)
+              ii = ll_data(ii)
+              disx = data(1, ii) - centres(1, i)
+              disy = data(2, ii) - centres(2, i)
+              disz = data(3, ii) - centres(3, i)
 
               dis2 = disx * disx + disy * disy + disz * disz
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 rind = int((dis - dim1_min) / rwidth + 1)
-                DD_i(i, rind) = DD_i(i, rind) + weights_centres(i) * weights_tracers(ii)
+                DD_i(i, rind) = DD_i(i, rind) + weights_data(i) * weights_data(ii)
               end if
-  
-              if(ii .eq. lirst_tracers(ix, iy, iz)) exit
-  
+
+              if(ii .eq. lirst_data(ix, iy, iz)) exit
+
             end do
           end if
 
@@ -282,11 +259,11 @@ program tpcf
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 rind = int((dis - dim1_min) / rwidth + 1)
-                DR_i(i, rind) = DR_i(i, rind) + weights_centres(i) * weights_randoms(ii)
+                DR_i(i, rind) = DR_i(i, rind) + weights_data(i) * weights_randoms(ii)
               end if
-  
+
               if (ii .eq. lirst_randoms(ix, iy, iz)) exit
-  
+
             end do
           end if
         end do
@@ -295,21 +272,29 @@ program tpcf
   end do
   !$OMP END PARALLEL DO
 
-  norm = SUM(weights_randoms) / SUM(weights_tracers)
+  ! Add up pair counts
+  do i = 1, dim1_nbin
+    DD(i) = SUM(DD_i(:, i))
+    DR(i) = SUM(DR_i(:, i))
+  end do
+
+  ! Normalize pair counts
+  DD = DD * 1./(ng * (ng - 1) / 2.)
+  DR = DR * 1./(ng * nr)
 
   ! Calculate density contrast
   if (estimator .eq. 'DP') then
-    delta = norm * (DD / DR) - 1
+    delta = (DD / DR) - 1
   else
     write(*,*) 'Estimator for the correlation function was not recognized.'
     stop
   end if
-  
+
   if (debug) then
     write(*,*) ''
     write(*,*) 'Calculation finished. Writing output...'
   end if
-  
+
   open(12, file=output_filename, status='replace')
   do i = 1, dim1_nbin
     write(12, fmt='(2f15.5)') rbin(i), delta(i)
