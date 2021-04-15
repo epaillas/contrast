@@ -213,9 +213,6 @@ program tpcf
     write(*, *) 'Maximum number of threads: ', OMP_GET_MAX_THREADS()
   end if
 
-  write(*,*) SUM(weights_randoms) / SUM(weights_data)
-  write(*,*) (ng * nr) / (ng * (ng - 1) / 2.)
-    
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
   !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
   do i = 1, ng
@@ -282,8 +279,8 @@ program tpcf
   end do
 
   ! Normalize pair counts
-  DD = DD * 1./(ng * (ng - 1) / 2.)
-  DR = DR * 1./(ng * nr)
+  DD = DD * 1./(SUM(weights_data) * (SUM(weights_data) - 1) / 2.)
+  DR = DR * 1./(SUM(weights_data) * SUM(weights_randoms))
 
   ! Calculate density contrast
   if (estimator .eq. 'DP') then
