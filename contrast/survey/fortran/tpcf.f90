@@ -216,6 +216,7 @@ program tpcf
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
   !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
   do i = 1, ng
+
     ipx = int((data(1, i) - gridmin) / rgrid + 1.)
     ipy = int((data(2, i) - gridmin) / rgrid + 1.)
     ipz = int((data(3, i) - gridmin) / rgrid + 1.)
@@ -279,8 +280,9 @@ program tpcf
   end do
 
   ! Normalize pair counts
-  DD = DD * 1./(SUM(weights_data) * (SUM(weights_data) - 1) / 2.)
+  DD = DD * 1./(SUM(weights_data) * SUM(weights_data))
   DR = DR * 1./(SUM(weights_data) * SUM(weights_randoms))
+  ! If it doesnt work try sum over DD and DR
 
   ! Calculate density contrast
   if (estimator .eq. 'DP') then
