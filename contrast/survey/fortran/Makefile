@@ -7,15 +7,15 @@ MLIBS =
 
 #################
 
-EXES = tpcf.exe ccf.exe
+EXES = tpcf.exe tpccf.exe
 
 all: $(EXES)
 
 tpcf.exe: tpcf.f90
 	$(FC) -fopenmp tpcf.f90 -o tpcf.exe $(MLIBS)
 
-ccf.exe: ccf.f90
-	$(FC) -fopenmp ccf.f90 -o ccf.exe $(MLIBS)
+tpccf.exe: tpccf.f90
+	$(FC) -fopenmp tpccf.f90 -o tpccf.exe $(MLIBS)
 
 
 install: $(EXES)
