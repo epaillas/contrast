@@ -348,7 +348,7 @@ program tpcf
   if (estimator .eq. 'DP') then
     delta = (DD / DR) - 1
   else if (estimator .eq. 'LS') then
-    delta = (DD - 2DR + RR) / RR - 1
+    delta = (DD - 2 * DR + RR) / RR - 1
   else
     write(*,*) 'Estimator for the correlation function was not recognized.'
     stop
