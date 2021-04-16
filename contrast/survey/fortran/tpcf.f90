@@ -64,21 +64,21 @@ program tpcf
   integer*8, dimension(:), allocatable :: ll_data, ll_randoms
   
   real*8, allocatable, dimension(:,:)  :: data, randoms
-  real*8, dimension(:), allocatable :: DD, DR, delta
+  real*8, dimension(:), allocatable :: DD, DR, RR, delta
   real*8, dimension(:), allocatable :: weights_data, weights_randoms
   real*8, dimension(:), allocatable :: rbin, rbin_edges
-  real*8, dimension(:, :), allocatable :: DD_i, DR_i
+  real*8, dimension(:, :), allocatable :: DD_i, DR_i, RR_i
 
   character(20), external :: str
   character(len=500) :: data_filename, output_filename, randoms_filename
   character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char
   character(len=10) :: nthreads_char, gridmin_char, gridmax_char
-  character(len=10) :: estimator = 'DP'
+  character(len=10) :: estimator
 
   logical :: debug = .true.
   
   if (debug) then
-    if (iargc() .lt. 10) then
+    if (iargc() .lt. 11) then
         write(*,*) 'Some arguments are missing.'
         write(*,*) '1) data_filename'
         write(*,*) '2) random_filename'
@@ -89,7 +89,8 @@ program tpcf
         write(*,*) '7) ngrid'
         write(*,*) '8) gridmin'
         write(*,*) '9) gridmax'
-        write(*,*) '10) nthreads'
+        write(*,*) '10) estimator'
+        write(*,*) '11) nthreads'
         write(*,*) ''
         stop
       end if
@@ -106,7 +107,8 @@ program tpcf
   call get_command_argument(number=7, value=ngrid_char)
   call get_command_argument(number=8, value=gridmin_char)
   call get_command_argument(number=9, value=gridmax_char)
-  call get_command_argument(number=10, value=nthreads_char)
+  call get_command_argument(number=10, value=estimator)
+  call get_command_argument(number=11, value=nthreads_char)
   
   read(dim1_min_char, *) dim1_min
   read(dim1_max_char, *) dim1_max
@@ -130,6 +132,7 @@ program tpcf
     write(*, *) 'gridmin: ', trim(gridmin_char), ' Mpc'
     write(*, *) 'gridmax: ', trim(gridmax_char), ' Mpc'
     write(*, *) 'ngrid: ', trim(ngrid_char)
+    write(*, *) 'estimator: ', trim(estimator)
     write(*, *) 'nthreads: ', trim(nthreads_char)
     write(*,*) ''
   end if
@@ -191,6 +194,10 @@ program tpcf
   allocate(DR(dim1_nbin))
   allocate(DR_i(ng, dim1_nbin))
   allocate(delta(dim1_nbin))
+  if (estimator .eq. 'LS') then
+    allocate(RR(dim1_nbin))
+    allocate(RR_i(nr, dim1_nbin))
+  end if
 
   rwidth = (dim1_max - dim1_min) / dim1_nbin
   do i = 1, dim1_nbin + 1
@@ -208,12 +215,17 @@ program tpcf
   dim1_min2 = dim1_min ** 2
   dim1_max2 = dim1_max ** 2
   ndif = int(dim1_max / rgrid + 1.)
+  if (estimator .eq. 'LS') then
+    RR_i = 0
+    RR = 0
+  end if
 
   call OMP_SET_NUM_THREADS(nthreads)
   if (debug) then
     write(*, *) 'Maximum number of threads: ', OMP_GET_MAX_THREADS()
   end if
 
+  ! Loop over data data
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
   !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
   do i = 1, ng
@@ -274,18 +286,69 @@ program tpcf
   end do
   !$OMP END PARALLEL DO
 
+  if (estimator .eq. 'LS') then
+    ! Loop over randoms
+    !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
+    !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
+    do i = 1, nr
+
+      ipx = int((randoms(1, i) - gridmin) / rgrid + 1.)
+      ipy = int((randoms(2, i) - gridmin) / rgrid + 1.)
+      ipz = int((randoms(3, i) - gridmin) / rgrid + 1.)
+
+      do ix = ipx - ndif, ipx + ndif, 1
+        do iy = ipy - ndif, ipy + ndif, 1
+          do iz = ipz - ndif, ipz + ndif, 1 
+            if ((ix - ipx)**2 + (iy - ipy)**2 + (iz - ipz)**2 .gt. (ndif + 1)**2) cycle
+
+            ii = lirst_randoms(ix, iy, iz)
+            if (ii .ne. 0) then
+              do
+                ii = ll_randoms(ii)
+                disx = randoms(1, ii) - randoms(1, i)
+                disy = randoms(2, ii) - randoms(2, i)
+                disz = randoms(3, ii) - randoms(3, i)
+
+                dis2 = disx * disx + disy * disy + disz * disz
+
+                if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
+                  dis = sqrt(dis2)
+                  rind = int((dis - dim1_min) / rwidth + 1)
+                  RR_i(i, rind) = RR_i(i, rind) + weights_randoms(i) * weights_randoms(ii)
+                end if
+
+                if(ii .eq. lirst_randoms(ix, iy, iz)) exit
+
+              end do
+            end if
+          end do
+        end do
+      end do
+    end do
+    !$OMP END PARALLEL DO
+  end if
+
   ! Add up pair counts
   do i = 1, dim1_nbin
     DD(i) = SUM(DD_i(:, i))
     DR(i) = SUM(DR_i(:, i))
+    if (estimator .eq. 'LS') then
+      RR(i) = SUM(RR_i(:, i))
+    end if
   end do
 
-  ! Normalization factor
-  factor = SUM(weights_randoms) / SUM(weights_data)
+  ! Normalize pair counts
+  DD = DD * 1. / (SUM(weights_data) ** 2)
+  DR = DR * 1. / (SUM(weights_data) * SUM(weights_randoms))
+  if (estimator .eq. 'LS') then
+    RR = RR * 1. / (SUM(weights_randoms) ** 2)
+  end if
 
   ! Calculate density contrast
   if (estimator .eq. 'DP') then
-    delta = factor * (DD / DR) - 1
+    delta = (DD / DR) - 1
+  else if (estimator .eq. 'LS') then
+    delta = (DD - 2DR + RR) / RR - 1
   else
     write(*,*) 'Estimator for the correlation function was not recognized.'
     stop
@@ -298,7 +361,13 @@ program tpcf
 
   open(12, file=output_filename, status='replace')
   do i = 1, dim1_nbin
-    write(12, fmt='(4E15.5)') rbin(i), delta(i), DD(i), DR(i)
+    if (estimator .eq. 'LS') then
+      write(12, fmt='(5E15.5)') rbin(i), delta(i), SUM(DD_i(:, i)),&
+      & SUM(DR_i(:, i)), SUM(RR_i(:, i))
+    else
+      write(12, fmt='(4E15.5)') rbin(i), delta(i), SUM(DD_i(:, i)),&
+      & SUM(DR_i(:, i))
+    end if
   end do
 
   call system_clock(end)
