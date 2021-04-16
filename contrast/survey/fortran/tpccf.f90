@@ -74,7 +74,7 @@ program tpcf
   character(len=500) :: random_filename1, random_filename2
   character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char
   character(len=10) :: nthreads_char, gridmin_char, gridmax_char
-  character(len=10) :: estimator
+  character(len=2) :: estimator
 
   logical :: debug = .true.
   
