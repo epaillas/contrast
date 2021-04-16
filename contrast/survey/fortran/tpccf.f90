@@ -79,21 +79,21 @@ program tpcf
   logical :: debug = .true.
   
   if (debug) then
-    if (iargc() .lt. 11) then
+    if (iargc() .lt. 13) then
         write(*,*) 'Some arguments are missing.'
         write(*,*) '1) data_filename1'
-        write(*,*) '1) data_filename2'
-        write(*,*) '2) random_filename1'
-        write(*,*) '2) random_filename2'
-        write(*,*) '3) output_filename'
-        write(*,*) '4) dim1_min'
-        write(*,*) '5) dim1_max'
-        write(*,*) '6) dim1_nbin'
-        write(*,*) '7) ngrid'
-        write(*,*) '8) gridmin'
-        write(*,*) '9) gridmax'
-        write(*,*) '10) estimator'
-        write(*,*) '11) nthreads'
+        write(*,*) '2) data_filename2'
+        write(*,*) '3) random_filename1'
+        write(*,*) '4) random_filename2'
+        write(*,*) '5) output_filename'
+        write(*,*) '6) dim1_min'
+        write(*,*) '7) dim1_max'
+        write(*,*) '8) dim1_nbin'
+        write(*,*) '9) ngrid'
+        write(*,*) '10) gridmin'
+        write(*,*) '11) gridmax'
+        write(*,*) '12) estimator'
+        write(*,*) '13) nthreads'
         write(*,*) ''
         stop
       end if
