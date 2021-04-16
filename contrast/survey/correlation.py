@@ -72,11 +72,11 @@ def tpcf(
   return r, corr
 
 def tpccf(
-  data_filename, random_filename, output_filename,
-  dim1_min, dim1_max, dim1_nbin,
-  ngrid, gridmin, gridmax,
-  estimator='DP', nthreads=1, data_filename2=None,
-  random_filename2=None
+  data_filename1, data_filename2, random_filename2,
+  output_filename, dim1_min, dim1_max,
+  dim1_nbin, ngrid, gridmin,
+  gridmax, estimator='DP', nthreads=1,
+  random_filename1=None
 ):
   '''
   Two-point cross-correlation function between
@@ -116,20 +116,27 @@ def tpccf(
   '''
 
   # check if files exist
-  if not path.isfile(data_filename):
-    raise FileNotFoundError('{} does not exist.'.format(data_filename))
+  if not path.isfile(data_filename1):
+    raise FileNotFoundError(f'{data_filename1} does not exist.')
 
-  if data_filename2 == None:
-    data_filename2 = data_filename
-  if random_filename2 == None:
-    random_filename2 = random_filename
+  if not path.isfile(data_filename2):
+    raise FileNotFoundError(f'{data_filename2} does not exist.')
+
+  if not path.isfile(random_filename2):
+    raise FileNotFoundError(f'{random_filename2} does not exist.')
+
+  if estimator == 'LS' and random_filename1 == None:
+    raise RuntimeError('Lady-Szalay estimator requires a random catalogue for dataset 1.')
+
+  if random_filename1 == None:
+    random_filename1 = random_filename2
 
   binpath = path.join(path.dirname(__file__),
-  'bin', 'ccf.exe')
+  'bin', 'tpccf.exe')
 
   cmd = [
-    binpath, data_filename, data_filename2,
-    random_filename, random_filename2, output_filename,
+    binpath, data_filename1, data_filename2,
+    random_filename1, random_filename2, output_filename,
     output_filename, str(dim1_min), str(dim1_max),
     str(dim1_nbin), str(ngrid), str(gridmin),
     str(gridmax), estimator, str(nthreads)

@@ -166,13 +166,13 @@ program tpcf
   end if
 
   ! read data catalogue # 2
-  open(10, file=data_filename2, status='old', form='unformatted')
-  read(10) nrows
-  read(10) ncols
+  open(11, file=data_filename2, status='old', form='unformatted')
+  read(11) nrows
+  read(11) ncols
   allocate(data2(ncols, nrows))
   allocate(weight_data2(nrows))
-  read(10) data2
-  close(10)
+  read(11) data2
+  close(11)
   ng2 = nrows
   if (ncols .eq. 4) then
     weight_data2 = data2(4, :)
@@ -186,35 +186,37 @@ program tpcf
     write(*,*) 'weight_data2(min, max) = ', minval(weight_data2), maxval(weight_data2)
   end if
 
-  ! read random catalogue # 1
-  open(11, file=random_filename1, status='old', form='unformatted')
-  read(11) nrows
-  read(11) ncols
-  allocate(random1(ncols, nrows))
-  allocate(weight_random1(nrows))
-  read(11) random1
-  close(11)
-  nr1 = nrows
-  if (ncols .eq. 4) then
-    weight_random1 = random1(4, :)
-    if (debug) write(*,*) 'Random file 1 has weight information.'
-  else
-    weight_random1 = 1.0
-  end if
-  if (debug) then 
-    write(*,*) 'nrandom1 dim: ', size(random1, dim=1), size(random1, dim=2)
-    write(*,*) 'random1(min), random1(max) = ', minval(random1(:,:)), maxval(random1(:,:))
-    write(*,*) 'weight_random1(min, max) = ', minval(weight_random1), maxval(weight_random1)
+  if (estimator .eq. 'LS') then
+    ! read random catalogue # 1
+    open(12, file=random_filename1, status='old', form='unformatted')
+    read(12) nrows
+    read(12) ncols
+    allocate(random1(ncols, nrows))
+    allocate(weight_random1(nrows))
+    read(12) random1
+    close(12)
+    nr1 = nrows
+    if (ncols .eq. 4) then
+      weight_random1 = random1(4, :)
+      if (debug) write(*,*) 'Random file 1 has weight information.'
+    else
+      weight_random1 = 1.0
+    end if
+    if (debug) then 
+      write(*,*) 'nrandom1 dim: ', size(random1, dim=1), size(random1, dim=2)
+      write(*,*) 'random1(min), random1(max) = ', minval(random1(:,:)), maxval(random1(:,:))
+      write(*,*) 'weight_random1(min, max) = ', minval(weight_random1), maxval(weight_random1)
+    end if
   end if
 
   ! read random catalogue # 2
-  open(11, file=random_filename2, status='old', form='unformatted')
-  read(11) nrows
-  read(11) ncols
+  open(13, file=random_filename2, status='old', form='unformatted')
+  read(13) nrows
+  read(13) ncols
   allocate(random2(ncols, nrows))
   allocate(weight_random2(nrows))
-  read(11) random2
-  close(11)
+  read(13) random2
+  close(13)
   nr2 = nrows
   if (ncols .eq. 4) then
     weight_random2 = random2(4, :)
