@@ -51,6 +51,7 @@ program tpcf
   
   real*8 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
   real*8 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2
+  real*8 :: factor
   
   integer*8 :: ng, nr, dim1_nbin, rind
   integer*8 :: i, ii, ix, iy, iz
@@ -279,14 +280,12 @@ program tpcf
     DR(i) = SUM(DR_i(:, i))
   end do
 
-  ! Normalize pair counts
-  DD = DD * 1./(SUM(weights_data) * SUM(weights_data))
-  DR = DR * 1./(SUM(weights_data) * SUM(weights_randoms))
-  ! If it doesnt work try sum over DD and DR
+  ! Normalization factor
+  factor = SUM(weights_randoms) / SUM(weights_data)
 
   ! Calculate density contrast
   if (estimator .eq. 'DP') then
-    delta = (DD / DR) - 1
+    delta = factor * (DD / DR) - 1
   else
     write(*,*) 'Estimator for the correlation function was not recognized.'
     stop
@@ -299,7 +298,7 @@ program tpcf
 
   open(12, file=output_filename, status='replace')
   do i = 1, dim1_nbin
-    write(12, fmt='(2f15.5)') rbin(i), delta(i)
+    write(12, fmt='(4E15.5)') rbin(i), delta(i), DD(i), DR(i)
   end do
 
   call system_clock(end)

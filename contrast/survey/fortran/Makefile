@@ -1,6 +1,7 @@
 # Compiler choice
 FC = gfortran
 MPIFC = gfortran
+IFC = ifort
 
 MLIBS =
 
@@ -11,7 +12,7 @@ EXES = tpcf.exe mean_radial_velocity_vs_r.exe tpcf_2d.exe tpcf_ap.exe
 all: $(EXES)
 
 tpcf.exe: tpcf.f90
-	$(FC) -fopenmp tpcf.f90 -o tpcf.exe $(MLIBS)
+	$(IFC) -qopenmp tpcf.f90 -o tpcf.exe $(MLIBS)
 
 mean_radial_velocity_vs_r.exe: mean_radial_velocity_vs_r.f90
 	$(FC) -fopenmp mean_radial_velocity_vs_r.f90 -o mean_radial_velocity_vs_r.exe $(MLIBS)
