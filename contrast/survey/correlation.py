@@ -142,6 +142,8 @@ def tpccf(
     str(gridmax), estimator, str(nthreads)
   ]
 
+  print(cmd)
+
   log_filename = '{}.log'.format(output_filename)
   log = open(log_filename, 'w+')
   subprocess.call(cmd, stdout=log, stderr=log)
