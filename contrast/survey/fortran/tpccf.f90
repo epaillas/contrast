@@ -231,8 +231,8 @@ program tpcf
   end if
 
   ! construct linked lists for data and random
-  allocate(ll_data2(ng1))
-  allocate(ll_random2(nr1))
+  allocate(ll_data2(ng2))
+  allocate(ll_random2(nr2))
   allocate(lirst_data2(ngrid, ngrid, ngrid))
   allocate(lirst_random2(ngrid, ngrid, ngrid))
   call linked_list(data2, ngrid, gridmin, gridmax, ll_data2, lirst_data2, rgrid)
