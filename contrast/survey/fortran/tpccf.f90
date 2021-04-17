@@ -63,11 +63,11 @@ program tpcf
   integer*8, dimension(:), allocatable :: ll_data2, ll_random2
   
   real*8, allocatable, dimension(:,:)  :: data1, data2, random1, random2
-  real*8, dimension(:), allocatable :: D1D2, D1R2, D2R1, R1R2, xi_r
+  real*8, dimension(:), allocatable :: D1D2, D1R2, R1D2, R1R2, xi_r
   real*8, dimension(:), allocatable :: weight_data1, weight_data2
   real*8, dimension(:), allocatable :: weight_random1, weight_random2
   real*8, dimension(:), allocatable :: rbin, rbin_edges
-  real*8, dimension(:, :), allocatable :: D1D2_i, D1R2_i, R1R2_i
+  real*8, dimension(:, :), allocatable :: D1D2_i, D1R2_i, R1D2_i, R1R2_i
 
   character(20), external :: str
   character(len=500) :: data_filename1, data_filename2, output_filename
@@ -246,6 +246,8 @@ program tpcf
   allocate(D1R2_i(ng1, dim1_nbin))
   allocate(xi_r(dim1_nbin))
   if (estimator .eq. 'LS') then
+    allocate(R1D2(dim1_nbin))
+    allocate(R1D2_i(nr1, dim1_nbin))
     allocate(R1R2(dim1_nbin))
     allocate(R1R2_i(nr1, dim1_nbin))
   end if
@@ -267,6 +269,8 @@ program tpcf
   dim1_max2 = dim1_max ** 2
   ndif = int(dim1_max / rgrid + 1.)
   if (estimator .eq. 'LS') then
+    R1D2_i = 0
+    R1D2 = 0
     R1R2_i = 0
     R1R2 = 0
   end if
@@ -372,6 +376,29 @@ program tpcf
 
               end do
             end if
+
+            ii = lirst_data2(ix, iy, iz)
+            if (ii .ne. 0) then
+              do
+                ii = ll_data2(ii)
+                disx = data2(1, ii) - random1(1, i)
+                disy = data2(2, ii) - random1(2, i)
+                disz = data2(3, ii) - random1(3, i)
+
+                dis2 = disx * disx + disy * disy + disz * disz
+
+                if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
+                  dis = sqrt(dis2)
+                  rind = int((dis - dim1_min) / rwidth + 1)
+                  R1D2_i(i, rind) = R1D2_i(i, rind) + weight_random1(i) * weight_data2(ii)
+                end if
+
+                  if(ii .eq. lirst_random2(ix, iy, iz)) exit
+
+              end do
+            end if
+
+
           end do
         end do
       end do
@@ -385,6 +412,7 @@ program tpcf
     D1R2(i) = SUM(D1R2_i(:, i))
     if (estimator .eq. 'LS') then
       R1R2(i) = SUM(R1R2_i(:, i))
+      R1D2(i) = SUM(R1D2_i(:, i))
     end if
   end do
 
@@ -393,13 +421,14 @@ program tpcf
   D1R2 = D1R2 * 1. / (SUM(weight_data1) * SUM(weight_random2))
   if (estimator .eq. 'LS') then
     R1R2 = R1R2 * 1. / (SUM(weight_random1) * SUM(weight_random2))
+    R1D2 = R1D2 * 1. / (SUM(weight_random1) * SUM(weight_data2))
   end if
 
   ! Calculate density contrast
   if (estimator .eq. 'DP') then
     xi_r = (D1D2 / D1R2) - 1
   else if (estimator .eq. 'LS') then
-    xi_r = (D1D2 - 2 * D1R2 + R1R2) / R1R2
+    xi_r = (D1D2 - D1R2 - R1D2 + R1R2) / R1R2
   else
     write(*,*) 'Estimator for the correlation function was not recognized.'
     stop
@@ -413,8 +442,8 @@ program tpcf
   open(12, file=output_filename, status='replace')
   do i = 1, dim1_nbin
     if (estimator .eq. 'LS') then
-      write(12, fmt='(5E15.5)') rbin(i), xi_r(i), SUM(D1D2_i(:, i)),&
-      & SUM(D1R2_i(:, i)), SUM(R1R2_i(:, i))
+      write(12, fmt='(6E15.5)') rbin(i), xi_r(i), SUM(D1D2_i(:, i)),&
+      & SUM(D1R2_i(:, i)), SUM(R1D2_i(:, i)), SUM(R1R2_i(:, i))
     else
       write(12, fmt='(4E15.5)') rbin(i), xi_r(i), SUM(D1D2_i(:, i)),&
       & SUM(D1R2_i(:, i))
