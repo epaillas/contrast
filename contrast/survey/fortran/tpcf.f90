@@ -51,7 +51,6 @@ program tpcf
   
   real*8 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
   real*8 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2
-  real*8 :: factor
   
   integer*8 :: ng, nr, dim1_nbin, rind
   integer*8 :: i, ii, ix, iy, iz
@@ -60,17 +59,17 @@ program tpcf
   integer*8 :: end, beginning, rate
   integer*4 :: nthreads
   
-  integer*8, dimension(:, :, :), allocatable :: lirst_data, lirst_randoms
-  integer*8, dimension(:), allocatable :: ll_data, ll_randoms
+  integer*8, dimension(:, :, :), allocatable :: lirst_data, lirst_random
+  integer*8, dimension(:), allocatable :: ll_data, ll_random
   
-  real*8, allocatable, dimension(:,:)  :: data, randoms
+  real*8, allocatable, dimension(:,:)  :: data, random
   real*8, dimension(:), allocatable :: DD, DR, RR, delta
-  real*8, dimension(:), allocatable :: weights_data, weights_randoms
+  real*8, dimension(:), allocatable :: weight_data, weight_random
   real*8, dimension(:), allocatable :: rbin, rbin_edges
   real*8, dimension(:, :), allocatable :: DD_i, DR_i, RR_i
 
   character(20), external :: str
-  character(len=500) :: data_filename, output_filename, randoms_filename
+  character(len=500) :: data_filename, output_filename, random_filename
   character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char
   character(len=10) :: nthreads_char, gridmin_char, gridmax_char
   character(len=10) :: estimator
@@ -99,7 +98,7 @@ program tpcf
   call system_clock(beginning, rate)
     
   call get_command_argument(number=1, value=data_filename)
-  call get_command_argument(number=2, value=randoms_filename)
+  call get_command_argument(number=2, value=random_filename)
   call get_command_argument(number=3, value=output_filename)
   call get_command_argument(number=4, value=dim1_min_char)
   call get_command_argument(number=5, value=dim1_max_char)
@@ -124,7 +123,7 @@ program tpcf
     write(*,*) 'input parameters:'
     write(*,*) ''
     write(*, *) 'data_filename: ', trim(data_filename)
-    write(*, *) 'randoms_filename: ', trim(randoms_filename)
+    write(*, *) 'random_filename: ', trim(random_filename)
     write(*, *) 'output_filename: ', trim(output_filename)
     write(*, *) 'dim1_min: ', trim(dim1_min_char), ' Mpc'
     write(*, *) 'dim1_max: ', trim(dim1_max_char), ' Mpc'
@@ -142,50 +141,50 @@ program tpcf
   read(10) nrows
   read(10) ncols
   allocate(data(ncols, nrows))
-  allocate(weights_data(nrows))
+  allocate(weight_data(nrows))
   read(10) data
   close(10)
   ng = nrows
   if (ncols .eq. 4) then
-    weights_data = data(4, :)
+    weight_data = data(4, :)
     if (debug) write(*,*) 'Tracer file has weight information.'
   else
-    weights_data = 1.0
+    weight_data = 1.0
   end if
   if (debug) then
     write(*,*) 'ndata dim: ', size(data, dim=1), size(data, dim=2)
     write(*,*) 'data(min, max) = ', minval(data(:,:)), maxval(data(:,:))
-    write(*,*) 'weights_data(min, max) = ', minval(weights_data), maxval(weights_data)
+    write(*,*) 'weight_data(min, max) = ', minval(weight_data), maxval(weight_data)
   end if
 
   ! read random catalogue
-  open(11, file=randoms_filename, status='old', form='unformatted')
+  open(11, file=random_filename, status='old', form='unformatted')
   read(11) nrows
   read(11) ncols
-  allocate(randoms(ncols, nrows))
-  allocate(weights_randoms(nrows))
-  read(11) randoms
+  allocate(random(ncols, nrows))
+  allocate(weight_random(nrows))
+  read(11) random
   close(11)
   nr = nrows
   if (ncols .eq. 4) then
-    weights_randoms = randoms(4, :)
+    weight_random = random(4, :)
     if (debug) write(*,*) 'Random file has weight information.'
   else
-    weights_randoms = 1.0
+    weight_random = 1.0
   end if
   if (debug) then 
-    write(*,*) 'nrandoms dim: ', size(randoms, dim=1), size(randoms, dim=2)
-    write(*,*) 'randoms(min), randoms(max) = ', minval(randoms(:,:)), maxval(randoms(:,:))
-    write(*,*) 'weights_randoms(min, max) = ', minval(weights_randoms), maxval(weights_randoms)
+    write(*,*) 'nrandom dim: ', size(random, dim=1), size(random, dim=2)
+    write(*,*) 'random(min), random(max) = ', minval(random(:,:)), maxval(random(:,:))
+    write(*,*) 'weight_random(min, max) = ', minval(weight_random), maxval(weight_random)
   end if
 
-  ! construct linked lists for data and randoms
+  ! construct linked lists for data and random
   allocate(ll_data(ng))
-  allocate(ll_randoms(nr))
+  allocate(ll_random(nr))
   allocate(lirst_data(ngrid, ngrid, ngrid))
-  allocate(lirst_randoms(ngrid, ngrid, ngrid))
+  allocate(lirst_random(ngrid, ngrid, ngrid))
   call linked_list(data, ngrid, gridmin, gridmax, ll_data, lirst_data, rgrid)
-  call linked_list(randoms, ngrid, gridmin, gridmax, ll_randoms, lirst_randoms, rgrid)
+  call linked_list(random, ngrid, gridmin, gridmax, ll_random, lirst_random, rgrid)
 
   allocate(rbin(dim1_nbin))
   allocate(rbin_edges(dim1_nbin + 1))
@@ -252,7 +251,7 @@ program tpcf
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 rind = int((dis - dim1_min) / rwidth + 1)
-                DD_i(i, rind) = DD_i(i, rind) + weights_data(i) * weights_data(ii)
+                DD_i(i, rind) = DD_i(i, rind) + weight_data(i) * weight_data(ii)
               end if
 
               if(ii .eq. lirst_data(ix, iy, iz)) exit
@@ -260,23 +259,23 @@ program tpcf
             end do
           end if
 
-          ii = lirst_randoms(ix, iy, iz)
+          ii = lirst_random(ix, iy, iz)
           if (ii .ne. 0) then
             do
-              ii = ll_randoms(ii)
-              disx = randoms(1, ii) - data(1, i)
-              disy = randoms(2, ii) - data(2, i)
-              disz = randoms(3, ii) - data(3, i)
+              ii = ll_random(ii)
+              disx = random(1, ii) - data(1, i)
+              disy = random(2, ii) - data(2, i)
+              disz = random(3, ii) - data(3, i)
 
               dis2 = disx * disx + disy * disy + disz * disz
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 rind = int((dis - dim1_min) / rwidth + 1)
-                DR_i(i, rind) = DR_i(i, rind) + weights_data(i) * weights_randoms(ii)
+                DR_i(i, rind) = DR_i(i, rind) + weight_data(i) * weight_random(ii)
               end if
 
-              if (ii .eq. lirst_randoms(ix, iy, iz)) exit
+              if (ii .eq. lirst_random(ix, iy, iz)) exit
 
             end do
           end if
@@ -287,37 +286,37 @@ program tpcf
   !$OMP END PARALLEL DO
 
   if (estimator .eq. 'LS') then
-    ! Loop over randoms
+    ! Loop over random
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
     !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
     do i = 1, nr
 
-      ipx = int((randoms(1, i) - gridmin) / rgrid + 1.)
-      ipy = int((randoms(2, i) - gridmin) / rgrid + 1.)
-      ipz = int((randoms(3, i) - gridmin) / rgrid + 1.)
+      ipx = int((random(1, i) - gridmin) / rgrid + 1.)
+      ipy = int((random(2, i) - gridmin) / rgrid + 1.)
+      ipz = int((random(3, i) - gridmin) / rgrid + 1.)
 
       do ix = ipx - ndif, ipx + ndif, 1
         do iy = ipy - ndif, ipy + ndif, 1
           do iz = ipz - ndif, ipz + ndif, 1 
             if ((ix - ipx)**2 + (iy - ipy)**2 + (iz - ipz)**2 .gt. (ndif + 1)**2) cycle
 
-            ii = lirst_randoms(ix, iy, iz)
+            ii = lirst_random(ix, iy, iz)
             if (ii .ne. 0) then
               do
-                ii = ll_randoms(ii)
-                disx = randoms(1, ii) - randoms(1, i)
-                disy = randoms(2, ii) - randoms(2, i)
-                disz = randoms(3, ii) - randoms(3, i)
+                ii = ll_random(ii)
+                disx = random(1, ii) - random(1, i)
+                disy = random(2, ii) - random(2, i)
+                disz = random(3, ii) - random(3, i)
 
                 dis2 = disx * disx + disy * disy + disz * disz
 
                 if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                   dis = sqrt(dis2)
                   rind = int((dis - dim1_min) / rwidth + 1)
-                  RR_i(i, rind) = RR_i(i, rind) + weights_randoms(i) * weights_randoms(ii)
+                  RR_i(i, rind) = RR_i(i, rind) + weight_random(i) * weight_random(ii)
                 end if
 
-                if(ii .eq. lirst_randoms(ix, iy, iz)) exit
+                if(ii .eq. lirst_random(ix, iy, iz)) exit
 
               end do
             end if
@@ -338,17 +337,17 @@ program tpcf
   end do
 
   ! Normalize pair counts
-  DD = DD * 1. / (SUM(weights_data) ** 2)
-  DR = DR * 1. / (SUM(weights_data) * SUM(weights_randoms))
+  DD = DD * 1. / (SUM(weight_data) ** 2)
+  DR = DR * 1. / (SUM(weight_data) * SUM(weight_random))
   if (estimator .eq. 'LS') then
-    RR = RR * 1. / (SUM(weights_randoms) ** 2)
+    RR = RR * 1. / (SUM(weight_random) ** 2)
   end if
 
   ! Calculate density contrast
   if (estimator .eq. 'DP') then
     delta = (DD / DR) - 1
   else if (estimator .eq. 'LS') then
-    delta = (DD - 2 * DR + RR) / RR - 1
+    delta = (DD - 2 * DR + RR) / RR
   else
     write(*,*) 'Estimator for the correlation function was not recognized.'
     stop

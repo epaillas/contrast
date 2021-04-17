@@ -125,7 +125,7 @@ program tpcf
 
   if (debug) then
     write(*,*) '-----------------------'
-    write(*,*) 'Running tpcf.exe'
+    write(*,*) 'Running tpccf.exe'
     write(*,*) 'input parameters:'
     write(*,*) ''
     write(*, *) 'data_filename1: ', trim(data_filename1)
