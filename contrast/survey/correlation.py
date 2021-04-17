@@ -137,12 +137,10 @@ def tpccf(
   cmd = [
     binpath, data_filename1, data_filename2,
     random_filename1, random_filename2, output_filename,
-    output_filename, str(dim1_min), str(dim1_max),
-    str(dim1_nbin), str(ngrid), str(gridmin),
-    str(gridmax), estimator, str(nthreads)
+    str(dim1_min), str(dim1_max), str(dim1_nbin),
+    str(ngrid), str(gridmin), str(gridmax),
+    estimator, str(nthreads)
   ]
-
-  print(cmd)
 
   log_filename = '{}.log'.format(output_filename)
   log = open(log_filename, 'w+')
