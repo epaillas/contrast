@@ -40,4 +40,27 @@ contains
 
   end subroutine linked_list
 
+  subroutine read_unformatted(input_filename, data, weight, np)
+    implicit none
+    integer*8 :: nrows, ncols
+    character(len=500), intent(in) :: input_filename
+    integer*8, intent(out) :: np
+    real*8, allocatable, dimension(:,:), intent(out) :: data
+    real*8, allocatable, dimension(:), intent(out) :: weight
+
+    open(20, file=input_filename, status='old', form='unformatted')
+    read(20) nrows
+    read(20) ncols
+    allocate(data(ncols, nrows))
+    allocate(weight(nrows))
+    read(20) data
+    close(20)
+    np = nrows
+    if (ncols .ge. 4) then
+      weight = data(4, :)
+    else
+      weight = 1.0
+    end if
+  end subroutine read_unformatted
+
 end module procedures

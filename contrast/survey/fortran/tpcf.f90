@@ -8,7 +8,6 @@ program tpcf
   
   integer*8 :: ng, nr, dim1_nbin, rind
   integer*8 :: i, ii, ix, iy, iz
-  integer*8 :: nrows, ncols
   integer*8 :: ngrid, ipx, ipy, ipz, ndif
   integer*8 :: end, beginning, rate
   integer*4 :: nthreads
@@ -90,43 +89,13 @@ program tpcf
     write(*,*) ''
   end if
 
-  ! read data catalogue
-  open(10, file=data_filename, status='old', form='unformatted')
-  read(10) nrows
-  read(10) ncols
-  allocate(data(ncols, nrows))
-  allocate(weight_data(nrows))
-  read(10) data
-  close(10)
-  ng = nrows
-  if (ncols .eq. 4) then
-    weight_data = data(4, :)
-    if (debug) write(*,*) 'Tracer file has weight information.'
-  else
-    weight_data = 1.0
-  end if
+  call read_unformatted(data_filename, data, weight_data, ng)
+  call read_unformatted(random_filename, random, weight_random, nr)
+
   if (debug) then
     write(*,*) 'ndata dim: ', size(data, dim=1), size(data, dim=2)
     write(*,*) 'data(min, max) = ', minval(data(:,:)), maxval(data(:,:))
     write(*,*) 'weight_data(min, max) = ', minval(weight_data), maxval(weight_data)
-  end if
-
-  ! read random catalogue
-  open(11, file=random_filename, status='old', form='unformatted')
-  read(11) nrows
-  read(11) ncols
-  allocate(random(ncols, nrows))
-  allocate(weight_random(nrows))
-  read(11) random
-  close(11)
-  nr = nrows
-  if (ncols .eq. 4) then
-    weight_random = random(4, :)
-    if (debug) write(*,*) 'Random file has weight information.'
-  else
-    weight_random = 1.0
-  end if
-  if (debug) then 
     write(*,*) 'nrandom dim: ', size(random, dim=1), size(random, dim=2)
     write(*,*) 'random(min), random(max) = ', minval(random(:,:)), maxval(random(:,:))
     write(*,*) 'weight_random(min, max) = ', minval(weight_random), maxval(weight_random)
