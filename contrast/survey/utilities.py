@@ -2,25 +2,38 @@ import sys
 import numpy as np
 from scipy.io import FortranFile
 import argparse
+import glob
+from astropy.io import fits
 
 def fits_to_unformatted(
-  input_filename, output_filename, omega_m
+  input_filename, output_filename, cosmology,
+  is_random=False, equal_weights=False, zrange=None
 ):
-  # define cosmology
-  cosmo = Cosmology(omega_m=omega_m)
-
   # open fits file
   with fits.open(input_filename) as hdul:
     cat = hdul[1].data
 
-  # convert redshifts to distances
-  dist = cosmo.ComovingDistance(cat['Z'])
-  x = dist * np.sin(cat['DEC'] * np.pi / 180) * np.cos(cat['RA'] * np.pi / 180)
-  y = dist * np.sin(cat['DEC'] * np.pi / 180) * np.sin(cat['RA'] * np.pi / 180)
-  z = dist * np.cos(cat['DEC'] * np.pi / 180)
+  if zrange is not None:
+    zmin, zmax = zrange
+    ind = (cat['Z'] > zmin) & (cat['Z'] < zmax)
+    cat = cat[ind]
 
-  # write result to output file
-  cout = np.c_[x, y, z]
+  # convert redshifts to distances
+  dist = cosmology.ComovingDistance(cat['Z'])
+  x = dist * np.cos(cat['DEC'] * np.pi / 180) * np.cos(cat['RA'] * np.pi / 180)
+  y = dist * np.cos(cat['DEC'] * np.pi / 180) * np.sin(cat['RA'] * np.pi / 180)
+  z = dist * np.sin(cat['DEC'] * np.pi / 180)
+
+  if not equal_weights:
+    if is_random:
+      weight = cat['WEIGHT_FKP']
+    else:
+      weight = cat['WEIGHT_FKP'] * cat['WEIGHT_SYSTOT']
+  else:
+    weight = np.ones(len(cat))
+
+  #write result to output file
+  cout = np.c_[x, y, z, weight]
   nrows, ncols = np.shape(cout)
   f = FortranFile(output_filename, 'w')
   nrows, ncols = np.shape(cout)
@@ -39,3 +52,20 @@ def ascii_to_unformatted(input_filename, output_filename
   f.write_record(ncols)
   f.write_record(cout)
   f.close()
+
+def mean_from_mocks(input_handle, output_filename):
+  mock_files = sorted(glob.glob(input_handle))
+  data_list = []
+  for mock_file in mock_files:
+    data = np.genfromtxt(mock_file)
+    data_list.append(data)
+
+  data_list = np.asarray(data_list)
+  data_mean = np.nanmean(data_list, axis=0)
+  data_std = np.nanstd(data_list, axis=0)[:, -1]
+
+  cout = np.c_[data_mean, data_std]
+  cout = np.nan_to_num(cout)
+  np.savetxt(output_filename, cout)
+
+  return cout
