@@ -53,7 +53,8 @@ def ascii_to_unformatted(input_filename, output_filename
   f.write_record(cout)
   f.close()
 
-def mean_from_mocks(input_handle, output_filename):
+def mean_from_mocks(input_handle, output_filename,
+  correlation_type='monopole'):
   mock_files = sorted(glob.glob(input_handle))
   data_list = []
   for mock_file in mock_files:
@@ -62,7 +63,14 @@ def mean_from_mocks(input_handle, output_filename):
 
   data_list = np.asarray(data_list)
   data_mean = np.nanmean(data_list, axis=0)
-  data_std = np.nanstd(data_list, axis=0)[:, -1]
+  if correlation_type == 'monopole':
+    data_std = np.nanstd(data_list, axis=0)[:, 1]
+  elif correlation_type == 'smu':
+    data_std = np.nanstd(data_list, axis=0)[:, 2]
+  elif correlation_type == 'sigmapi':
+    data_std = np.nanstd(data_list, axis=0)[:, 2]
+  else:
+    raise RuntimeError('Correlation type not recognized.')
 
   cout = np.c_[data_mean, data_std]
   cout = np.nan_to_num(cout)
