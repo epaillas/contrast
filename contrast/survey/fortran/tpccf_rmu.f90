@@ -110,8 +110,6 @@ program tpccf_rmu
     write(*,*) ''
   end if
 
-  stop
-
   call read_unformatted(data_filename1, data1, weight_data1, ng1)
   call read_unformatted(data_filename2, data2, weight_data2, ng2)
   call read_unformatted(random_filename2, random2, weight_random2, nr2)
@@ -138,6 +136,8 @@ program tpccf_rmu
     allocate(R1R2(dim1_nbin, dim2_nbin))
     allocate(R1R2_i(nr1, dim1_nbin, dim2_nbin))
   end if
+
+  stop
 
   call binning(dim1_min, dim1_max, dim1_nbin, rbin, rbin_edges, rwidth)
   call binning(dim2_min, dim2_max, dim2_nbin, mubin, mubin_edges, muwidth)
