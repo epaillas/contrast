@@ -63,4 +63,26 @@ contains
     end if
   end subroutine read_unformatted
 
+  subroutine binning(rmin, rmax, nbin, bin, bin_edges, rwidth)
+    implicit none
+
+    integer*8 :: i
+    integer*8, intent(in) :: nbin
+    real*8, intent(in) :: rmin, rmax
+    real*8, intent(out) :: rwidth
+    real*8, allocatable, dimension(:), intent(out) :: bin, bin_edges
+
+    allocate(bin(nbin))
+    allocate(bin_edges(nbin + 1))
+
+    rwidth = (rmax - rmin) / nbin
+    do i = 1, nbin + 1
+      bin_edges(i) = rmin + (i - 1) * rwidth
+    end do
+    do i = 1, nbin
+      bin(i) = bin_edges(i + 1) - rwidth / 2.
+    end do
+
+  end subroutine binning
+
 end module procedures

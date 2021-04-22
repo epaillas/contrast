@@ -1,4 +1,4 @@
-program tpccf
+program tpccf_monopole
   use procedures
   use OMP_LIB
   implicit none
@@ -409,5 +409,5 @@ program tpccf
     print *, "elapsed time: ", real(end - beginning) / real(rate)
   end if
 
-  end program tpccf
+  end program tpccf_monopole
     

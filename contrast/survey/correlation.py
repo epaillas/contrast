@@ -76,7 +76,8 @@ def tpccf(
   output_filename, dim1_min, dim1_max,
   dim1_nbin, ngrid, gridmin,
   gridmax, estimator='DP', nthreads=1,
-  random_filename1=None
+  random_filename1=None, correlation_type='monopole',
+  dim2_min=-1, dim2_max=1, dim2_nbin=100
 ):
   '''
   Two-point cross-correlation function between
@@ -113,6 +114,12 @@ def tpccf(
 
   nthreads (optional): number of threads to use while running the 
   algorithm.
+
+  dim1_min: minimum value along the second bin dimension (mu or pi)
+
+  dim2_max: maximum value along the second bin dimension (mu or pi)
+
+  dim2_nbin: number of bins along the second dimension (mu or pi)
   '''
 
   # check if files exist
@@ -130,17 +137,30 @@ def tpccf(
 
   if random_filename1 == None:
     random_filename1 = random_filename2
+  
 
   binpath = path.join(path.dirname(__file__),
-  'bin', 'tpccf.exe')
+  'bin', f'tpccf_{correlation_type}.exe')
 
-  cmd = [
-    binpath, data_filename1, data_filename2,
-    random_filename1, random_filename2, output_filename,
-    str(dim1_min), str(dim1_max), str(dim1_nbin),
-    str(ngrid), str(gridmin), str(gridmax),
-    estimator, str(nthreads)
-  ]
+  if correlation_type == 'monopole':
+    cmd = [
+      binpath, data_filename1, data_filename2,
+      random_filename1, random_filename2, output_filename,
+      str(dim1_min), str(dim1_max), str(dim1_nbin),
+      str(ngrid), str(gridmin), str(gridmax),
+      estimator, str(nthreads)
+    ]
+  elif correlation_type == 'rmu':
+    cmd = [
+      binpath, data_filename1, data_filename2,
+      random_filename1, random_filename2, output_filename,
+      str(dim1_min), str(dim1_max), str(dim1_nbin),
+      str(dim2_min), str(dim2_max), str(dim2_nbin),
+      str(ngrid), str(gridmin), str(gridmax),
+      estimator, str(nthreads)
+    ]
+  elif correlation_type == 'sigmapi':
+    raise ValueError('sigma-pi correlation function is still not supported.')
 
   log_filename = '{}.log'.format(output_filename)
   log = open(log_filename, 'w+')
@@ -149,8 +169,13 @@ def tpccf(
   # open output file
   data = np.genfromtxt(output_filename)
   r = data[:,0]
-  corr = data[:,1]
-
-  return r, corr
-
+  if correlation_type == 'monopole':
+    r = data[:,0]
+    corr = data[:,1]
+    return r, corr
+  elif correlation_type == 'rmu':
+    r = data[:,0]
+    mu = data[:,1]
+    corr = data[:,2]
+    return r, mu, corr
 
