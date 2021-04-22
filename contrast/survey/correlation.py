@@ -163,6 +163,8 @@ def tpccf(
     ]
   elif correlation_type == 'sigmapi':
     raise ValueError('sigma-pi correlation function is still not supported.')
+  else:
+    raise ValueError('Invalid correlation type.')
 
   log_filename = '{}.log'.format(output_filename)
   log = open(log_filename, 'w+')
@@ -175,7 +177,7 @@ def tpccf(
     r = data[:,0]
     corr = data[:,1]
     return r, corr
-  elif correlation_type == 'rmu':
+  if correlation_type == 'rmu':
     r = data[:,0]
     mu = data[:,1]
     corr = data[:,2]

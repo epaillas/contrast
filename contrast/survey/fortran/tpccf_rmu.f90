@@ -230,7 +230,7 @@ program tpccf_rmu
   if (estimator .eq. 'LS') then
     ! Loop over randoms # 1
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
-    !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
+    !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind, mu, muind)
     do i = 1, nr1
 
       ipx = int((random1(1, i) - gridmin) / rgrid + 1.)
