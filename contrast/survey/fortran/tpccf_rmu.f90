@@ -137,10 +137,11 @@ program tpccf_rmu
     allocate(R1R2_i(nr1, dim1_nbin, dim2_nbin))
   end if
 
-  stop
-
   call binning(dim1_min, dim1_max, dim1_nbin, rbin, rbin_edges, rwidth)
   call binning(dim2_min, dim2_max, dim2_nbin, mubin, mubin_edges, muwidth)
+
+  stop
+
 
   D1D2 = 0
   D1D2_i = 0
