@@ -19,11 +19,11 @@ program tpccf_rmu
   integer*8, dimension(:), allocatable :: ll_data2, ll_random2
   
   real*8, allocatable, dimension(:,:)  :: data1, data2, random1, random2
-  real*4, dimension(:, :), allocatable :: D1D2, D1R2, R1D2, R1R2, xi_r
+  real*8, dimension(:, :), allocatable :: D1D2, D1R2, R1D2, R1R2, xi_r
   real*8, dimension(:), allocatable :: weight_data1, weight_data2
   real*8, dimension(:), allocatable :: weight_random1, weight_random2
   real*8, dimension(:), allocatable :: rbin, rbin_edges, mubin, mubin_edges
-  real*4, dimension(:, :, :), allocatable :: D1D2_i, D1R2_i, R1D2_i, R1R2_i
+  real*8, dimension(:, :, :), allocatable :: D1D2_i, D1R2_i, R1D2_i, R1R2_i
 
   character(20), external :: str
   character(len=500) :: data_filename1, data_filename2, output_filename
@@ -168,7 +168,7 @@ program tpccf_rmu
 
   ! Loop over data 1
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
-  !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind)
+  !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind, mu, muind)
   do i = 1, ng1
 
     ipx = int((data1(1, i) - gridmin) / rgrid + 1.)
