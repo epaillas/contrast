@@ -140,9 +140,6 @@ program tpccf_rmu
   call binning(dim1_min, dim1_max, dim1_nbin, rbin, rbin_edges, rwidth)
   call binning(dim2_min, dim2_max, dim2_nbin, mubin, mubin_edges, muwidth)
 
-  stop
-
-
   D1D2 = 0
   D1D2_i = 0
   D1R2 = 0
