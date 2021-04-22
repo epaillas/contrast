@@ -3,26 +3,26 @@ program tpccf_rmu
   use OMP_LIB
   implicit none
   
-  real*4 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
-  real*4 :: rwidth, dim1_max, dim1_min, dim1_max2
-  real*4 :: mu, muwidth, dim2_max, dim2_min, dim1_min2
-  real*4 :: irwidth, imuwidth
+  real*8 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
+  real*8 :: rwidth, dim1_max, dim1_min, dim1_max2
+  real*8 :: mu, muwidth, dim2_max, dim2_min, dim1_min2
+  real*8 :: irwidth, imuwidth
   
-  integer*4 :: ng1, ng2, nr1, nr2, rind, muind
-  integer*4 :: i, ii, ix, iy, iz
-  integer*4 :: dim1_nbin, dim2_nbin
-  integer*4 :: ngrid, ipx, ipy, ipz, ndif
-  integer*4 :: end, beginning, rate
+  integer*8 :: ng1, ng2, nr1, nr2, rind, muind
+  integer*8 :: i, ii, ix, iy, iz
+  integer*8 :: dim1_nbin, dim2_nbin
+  integer*8 :: ngrid, ipx, ipy, ipz, ndif
+  integer*8 :: end, beginning, rate
   integer*4 :: nthreads
   
-  integer*4, dimension(:, :, :), allocatable :: lirst_data2, lirst_random2
-  integer*4, dimension(:), allocatable :: ll_data2, ll_random2
+  integer*8, dimension(:, :, :), allocatable :: lirst_data2, lirst_random2
+  integer*8, dimension(:), allocatable :: ll_data2, ll_random2
   
-  real*4, allocatable, dimension(:,:)  :: data1, data2, random1, random2
+  real*8, allocatable, dimension(:,:)  :: data1, data2, random1, random2
   real*4, dimension(:, :), allocatable :: D1D2, D1R2, R1D2, R1R2, xi_r
-  real*4, dimension(:), allocatable :: weight_data1, weight_data2
-  real*4, dimension(:), allocatable :: weight_random1, weight_random2
-  real*4, dimension(:), allocatable :: rbin, rbin_edges, mubin, mubin_edges
+  real*8, dimension(:), allocatable :: weight_data1, weight_data2
+  real*8, dimension(:), allocatable :: weight_random1, weight_random2
+  real*8, dimension(:), allocatable :: rbin, rbin_edges, mubin, mubin_edges
   real*4, dimension(:, :, :), allocatable :: D1D2_i, D1R2_i, R1D2_i, R1R2_i
 
   character(20), external :: str

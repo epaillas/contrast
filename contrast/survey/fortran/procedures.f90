@@ -4,13 +4,14 @@ contains
 
   subroutine linked_list(pos, ngrid, gridmin, gridmax, ll, lirst, rgrid)
     implicit none
-    integer*4 :: i, ng, ipx, ipy, ipz
-    integer*4, intent(in) :: ngrid
-    real*4, intent(out) :: rgrid
-    real*4, intent(in) :: gridmin, gridmax
-    real*4, dimension(:,:), intent(in) :: pos
-    integer*4, dimension(:,:,:), intent(out) :: lirst
-    integer*4, dimension(:), intent(out) :: ll
+    integer*8 :: ng
+    integer*8 :: i, ipx, ipy, ipz
+    integer*8, intent(in) :: ngrid
+    real*8, intent(out) :: rgrid
+    real*8, intent(in) :: gridmin, gridmax
+    real*8, dimension(:,:), intent(in) :: pos
+    integer*8, dimension(:,:,:), intent(out) :: lirst
+    integer*8, dimension(:), intent(out) :: ll
 
     rgrid = (gridmax - gridmin) / ngrid
 
@@ -42,11 +43,11 @@ contains
 
   subroutine read_unformatted(input_filename, data, weight, np)
     implicit none
-    integer*4 :: nrows, ncols
+    integer*8 :: nrows, ncols
     character(len=500), intent(in) :: input_filename
-    integer*4, intent(out) :: np
-    real*4, allocatable, dimension(:,:), intent(out) :: data
-    real*4, allocatable, dimension(:), intent(out) :: weight
+    integer*8, intent(out) :: np
+    real*8, allocatable, dimension(:,:), intent(out) :: data
+    real*8, allocatable, dimension(:), intent(out) :: weight
 
     open(20, file=input_filename, status='old', form='unformatted')
     read(20) nrows
@@ -66,11 +67,11 @@ contains
   subroutine binning(rmin, rmax, nbin, bin, bin_edges, rwidth)
     implicit none
 
-    integer*4 :: i
-    integer*4, intent(in) :: nbin
-    real*4, intent(in) :: rmin, rmax
-    real*4, intent(out) :: rwidth
-    real*4, allocatable, dimension(:), intent(out) :: bin, bin_edges
+    integer*8 :: i
+    integer*8, intent(in) :: nbin
+    real*8, intent(in) :: rmin, rmax
+    real*8, intent(out) :: rwidth
+    real*8, allocatable, dimension(:), intent(out) :: bin, bin_edges
 
     allocate(bin(nbin))
     allocate(bin_edges(nbin + 1))
