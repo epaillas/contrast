@@ -8,15 +8,15 @@ program tpccf_rmu
   real*4 :: mu, muwidth, dim2_max, dim2_min, dim1_min2
   real*4 :: irwidth, imuwidth
   
-  integer*8 :: ng1, ng2, nr1, nr2, rind, muind
-  integer*8 :: i, ii, ix, iy, iz
+  integer*4 :: ng1, ng2, nr1, nr2, rind, muind
+  integer*4 :: i, ii, ix, iy, iz
   integer*4 :: dim1_nbin, dim2_nbin
   integer*4 :: ngrid, ipx, ipy, ipz, ndif
-  integer*8 :: end, beginning, rate
+  integer*4 :: end, beginning, rate
   integer*4 :: nthreads
   
-  integer*8, dimension(:, :, :), allocatable :: lirst_data2, lirst_random2
-  integer*8, dimension(:), allocatable :: ll_data2, ll_random2
+  integer*4, dimension(:, :, :), allocatable :: lirst_data2, lirst_random2
+  integer*4, dimension(:), allocatable :: ll_data2, ll_random2
   
   real*4, allocatable, dimension(:,:)  :: data1, data2, random1, random2
   real*4, dimension(:, :), allocatable :: D1D2, D1R2, R1D2, R1R2, xi_r

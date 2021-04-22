@@ -4,13 +4,13 @@ contains
 
   subroutine linked_list(pos, ngrid, gridmin, gridmax, ll, lirst, rgrid)
     implicit none
-    integer*8 :: i, ng, ipx, ipy, ipz
+    integer*4 :: i, ng, ipx, ipy, ipz
     integer*4, intent(in) :: ngrid
     real*4, intent(out) :: rgrid
     real*4, intent(in) :: gridmin, gridmax
     real*4, dimension(:,:), intent(in) :: pos
-    integer*8, dimension(:,:,:), intent(out) :: lirst
-    integer*8, dimension(:), intent(out) :: ll
+    integer*4, dimension(:,:,:), intent(out) :: lirst
+    integer*4, dimension(:), intent(out) :: ll
 
     rgrid = (gridmax - gridmin) / ngrid
 
@@ -42,9 +42,9 @@ contains
 
   subroutine read_unformatted(input_filename, data, weight, np)
     implicit none
-    integer*8 :: nrows, ncols
+    integer*4 :: nrows, ncols
     character(len=500), intent(in) :: input_filename
-    integer*8, intent(out) :: np
+    integer*4, intent(out) :: np
     real*4, allocatable, dimension(:,:), intent(out) :: data
     real*4, allocatable, dimension(:), intent(out) :: weight
 

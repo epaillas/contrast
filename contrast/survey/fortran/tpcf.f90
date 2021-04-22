@@ -3,23 +3,23 @@ program tpcf
   use OMP_LIB
   implicit none
   
-  real*8 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
-  real*8 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2
+  real*4 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
+  real*4 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2
   
-  integer*8 :: ng, nr, dim1_nbin, rind
-  integer*8 :: i, ii, ix, iy, iz
-  integer*8 :: ngrid, ipx, ipy, ipz, ndif
-  integer*8 :: end, beginning, rate
+  integer*4 :: ng, nr, dim1_nbin, rind
+  integer*4 :: i, ii, ix, iy, iz
+  integer*4 :: ngrid, ipx, ipy, ipz, ndif
+  integer*4 :: end, beginning, rate
   integer*4 :: nthreads
   
-  integer*8, dimension(:, :, :), allocatable :: lirst_data, lirst_random
-  integer*8, dimension(:), allocatable :: ll_data, ll_random
+  integer*4, dimension(:, :, :), allocatable :: lirst_data, lirst_random
+  integer*4, dimension(:), allocatable :: ll_data, ll_random
   
-  real*8, allocatable, dimension(:,:)  :: data, random
-  real*8, dimension(:), allocatable :: DD, DR, RR, delta
-  real*8, dimension(:), allocatable :: weight_data, weight_random
-  real*8, dimension(:), allocatable :: rbin, rbin_edges
-  real*8, dimension(:, :), allocatable :: DD_i, DR_i, RR_i
+  real*4, allocatable, dimension(:,:)  :: data, random
+  real*4, dimension(:), allocatable :: DD, DR, RR, delta
+  real*4, dimension(:), allocatable :: weight_data, weight_random
+  real*4, dimension(:), allocatable :: rbin, rbin_edges
+  real*4, dimension(:, :), allocatable :: DD_i, DR_i, RR_i
 
   character(20), external :: str
   character(len=500) :: data_filename, output_filename, random_filename
