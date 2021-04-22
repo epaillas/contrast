@@ -4,8 +4,9 @@ program tpccf_rmu
   implicit none
   
   real*8 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
-  real*8 :: rwidth, dim1_max, dim1_min, dim1_max2, dim1_min2
-  real*8 :: mu, muwidth, dim2_max, dim2_min
+  real*8 :: rwidth, dim1_max, dim1_min, dim1_max2
+  real*8 :: mu, muwidth, dim2_max, dim2_min, dim1_min2
+  real*8 :: irwidth, imuwidth
   
   integer*8 :: ng1, ng2, nr1, nr2, rind, muind
   integer*8 :: i, ii, ix, iy, iz
@@ -90,7 +91,7 @@ program tpccf_rmu
 
   if (debug) then
     write(*,*) '-----------------------'
-    write(*,*) 'Running tpccf.exe'
+    write(*,*) 'Running tpccf_rmu.exe'
     write(*,*) 'input parameters:'
     write(*,*) ''
     write(*, *) 'data_filename1: ', trim(data_filename1)
@@ -147,7 +148,9 @@ program tpccf_rmu
   dim1_min2 = dim1_min ** 2
   dim1_max2 = dim1_max ** 2
   ndif = int(dim1_max / rgrid + 1.)
-  if (estimator .eq. 'LS') then
+  irwidth = 1 / rwidth
+  imuwidth = 1 / muwidth
+   if (estimator .eq. 'LS') then
     R1D2_i = 0
     R1D2 = 0
     R1R2_i = 0
@@ -186,8 +189,8 @@ program tpccf_rmu
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 mu = disz / dis ! assumes LOS is (0, 0, 1)
-                rind = int((dis - dim1_min) / rwidth + 1)
-                muind = int((mu - dim2_min) / muwidth + 1)
+                rind = int((dis - dim1_min) * irwidth + 1)
+                muind = int((mu - dim2_min) * imuwidth + 1)
                 D1D2_i(i, rind, muind) = D1D2_i(i, rind, muind) + weight_data1(i) * weight_data2(ii)
               end if
 
@@ -209,8 +212,8 @@ program tpccf_rmu
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
                 mu = disz / dis ! assumes LOS is (0, 0, 1)
-                rind = int((dis - dim1_min) / rwidth + 1)
-                muind = int((mu - dim2_min) / muwidth + 1)
+                rind = int((dis - dim1_min) * irwidth + 1)
+                muind = int((mu - dim2_min) * imuwidth + 1)
                 D1R2_i(i, rind, muind) = D1R2_i(i, rind, muind) + weight_data1(i) * weight_random2(ii)
               end if
 
@@ -252,8 +255,8 @@ program tpccf_rmu
                 if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                   dis = sqrt(dis2)
                   mu = disz / dis ! assumes LOS is (0, 0, 1)
-                  rind = int((dis - dim1_min) / rwidth + 1)
-                  muind = int((mu - dim2_min) / muwidth + 1)
+                  rind = int((dis - dim1_min) * irwidth + 1)
+                  muind = int((mu - dim2_min) * imuwidth + 1)
                   R1R2_i(i, rind, muind) = R1R2_i(i, rind, muind) + weight_random1(i) * weight_random2(ii)
                 end if
 
@@ -275,8 +278,8 @@ program tpccf_rmu
                 if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                   dis = sqrt(dis2)
                   mu = disz / dis ! assumes LOS is (0, 0, 1)
-                  rind = int((dis - dim1_min) / rwidth + 1)
-                  muind = int((mu - dim2_min) / muwidth + 1)
+                  rind = int((dis - dim1_min) * irwidth + 1)
+                  muind = int((mu - dim2_min) * imuwidth + 1)
                   R1D2_i(i, rind, muind) = R1D2_i(i, rind, muind) + weight_random1(i) * weight_data2(ii)
                 end if
 
