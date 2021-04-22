@@ -142,6 +142,8 @@ def tpccf(
   binpath = path.join(path.dirname(__file__),
   'bin', f'tpccf_{correlation_type}.exe')
 
+  print(binpath)
+
   if correlation_type == 'monopole':
     cmd = [
       binpath, data_filename1, data_filename2,
