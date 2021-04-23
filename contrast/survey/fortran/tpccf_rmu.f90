@@ -6,7 +6,7 @@ program tpccf_rmu
   real*8 :: rgrid, disx, disy, disz, dis, dis2, gridmin, gridmax
   real*8 :: rwidth, dim1_max, dim1_min, dim1_max2
   real*8 :: mu, muwidth, dim2_max, dim2_min, dim1_min2
-  real*8 :: irwidth, imuwidth
+  real*8 :: irwidth, imuwidth, comx, comy, comz
   
   integer*8 :: ng1, ng2, nr1, nr2, rind, muind
   integer*8 :: i, ii, ix, iy, iz
@@ -14,7 +14,7 @@ program tpccf_rmu
   integer*8 :: ngrid, ipx, ipy, ipz, ndif
   integer*8 :: end, beginning, rate
   integer*4 :: nthreads
-  
+
   integer*8, dimension(:, :, :), allocatable :: lirst_data2, lirst_random2
   integer*8, dimension(:), allocatable :: ll_data2, ll_random2
   
@@ -182,7 +182,11 @@ program tpccf_rmu
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
-                mu = disz / dis ! assumes LOS is (0, 0, 1)
+                comx = 0.5 * (data1(1, i) + data2(1, ii))
+                comy = 0.5 * (data1(2, i) + data2(2, ii))
+                comz = 0.5 * (data1(2, i) + data2(3, ii))
+                mu = (disx * comx + disy * comy + disz * comz) &
+                & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
                 rind = int((dis - dim1_min) * irwidth + 1)
                 muind = int((mu - dim2_min) * imuwidth + 1)
                 D1D2(rind, muind) = D1D2(rind, muind) + weight_data1(i) * weight_data2(ii)
@@ -205,7 +209,11 @@ program tpccf_rmu
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
-                mu = disz / dis ! assumes LOS is (0, 0, 1)
+                comx = 0.5 * (data1(1, i) + random2(1, ii))
+                comy = 0.5 * (data1(2, i) + random2(2, ii))
+                comz = 0.5 * (data1(2, i) + random2(3, ii))
+                mu = (disx * comx + disy * comy + disz * comz) &
+                & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
                 rind = int((dis - dim1_min) * irwidth + 1)
                 muind = int((mu - dim2_min) * imuwidth + 1)
                 D1R2(rind, muind) = D1R2(rind, muind) + weight_data1(i) * weight_random2(ii)
@@ -249,7 +257,11 @@ program tpccf_rmu
 
                 if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                   dis = sqrt(dis2)
-                  mu = disz / dis ! assumes LOS is (0, 0, 1)
+                  comx = 0.5 * (random1(1, i) + random2(1, ii))
+                  comy = 0.5 * (random1(2, i) + random2(2, ii))
+                  comz = 0.5 * (random1(2, i) + random2(3, ii))
+                  mu = (disx * comx + disy * comy + disz * comz) &
+                  & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
                   rind = int((dis - dim1_min) * irwidth + 1)
                   muind = int((mu - dim2_min) * imuwidth + 1)
                   R1R2(rind, muind) = R1R2(rind, muind) + weight_random1(i) * weight_random2(ii)
@@ -272,7 +284,11 @@ program tpccf_rmu
 
                 if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                   dis = sqrt(dis2)
-                  mu = disz / dis ! assumes LOS is (0, 0, 1)
+                  comx = 0.5 * (random1(1, i) + data2(1, ii))
+                  comy = 0.5 * (random1(2, i) + data2(2, ii))
+                  comz = 0.5 * (random1(2, i) + data2(3, ii))
+                  mu = (disx * comx + disy * comy + disz * comz) &
+                  & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
                   rind = int((dis - dim1_min) * irwidth + 1)
                   muind = int((mu - dim2_min) * imuwidth + 1)
                   R1D2(rind, muind) = R1D2(rind, muind) + weight_random1(i) * weight_data2(ii)
@@ -290,18 +306,6 @@ program tpccf_rmu
     end do
     !$OMP END PARALLEL DO
   end if
-
-  ! ! Add up pair counts
-  ! do i = 1, dim1_nbin
-  !   do ii = 1, dim2_nbin
-  !     D1D2(i, ii) = SUM(D1D2_i(:, i, ii))
-  !     D1R2(i, ii) = SUM(D1R2_i(:, i, ii))
-  !     if (estimator .eq. 'LS') then
-  !       R1R2(i, ii) = SUM(R1R2_i(:, i, ii))
-  !       R1D2(i, ii) = SUM(R1D2_i(:, i, ii))
-  !     end if
-  !   end do
-  ! end do
 
   ! Normalize pair counts
   D1D2 = D1D2 * 1. / (SUM(weight_data1) * SUM(weight_data2))
