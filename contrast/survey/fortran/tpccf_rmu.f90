@@ -165,7 +165,7 @@ program tpccf_rmu
   ! Loop over data 1
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
   !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind, mu, muind) &
-  !$OMP REDUCTION(+:D1D2, R1R2)
+  !$OMP REDUCTION(+:D1D2, D1R2)
   do i = 1, ng1
 
     ipx = int((data1(1, i) - gridmin) / rgrid + 1.)
