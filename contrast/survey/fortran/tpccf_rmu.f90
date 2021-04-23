@@ -297,6 +297,8 @@ program tpccf_rmu
     !$OMP END PARALLEL DO
   end if
 
+  write(*,*) 'I made it all the way here'
+
   ! ! Add up pair counts
   ! do i = 1, dim1_nbin
   !   do ii = 1, dim2_nbin
@@ -309,6 +311,10 @@ program tpccf_rmu
   !   end do
   ! end do
 
+  call system_clock(end)
+  if (debug) then
+    print *, "elapsed time: ", real(end - beginning) / real(rate)
+  end if
   stop
 
   ! Normalize pair counts
