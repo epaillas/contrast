@@ -23,7 +23,6 @@ program tpccf_rmu
   real*8, dimension(:), allocatable :: weight_data1, weight_data2
   real*8, dimension(:), allocatable :: weight_random1, weight_random2
   real*8, dimension(:), allocatable :: rbin, rbin_edges, mubin, mubin_edges
-  real*8, dimension(:, :, :), allocatable :: D1D2_i, D1R2_i, R1D2_i, R1R2_i
 
   character(20), external :: str
   character(len=500) :: data_filename1, data_filename2, output_filename
@@ -126,15 +125,11 @@ program tpccf_rmu
   call linked_list(random2, ngrid, gridmin, gridmax, ll_random2, lirst_random2, rgrid)
 
   allocate(D1D2(dim1_nbin, dim2_nbin))
-  !allocate(D1D2_i(ng1, dim1_nbin, dim2_nbin))
   allocate(D1R2(dim1_nbin, dim2_nbin))
-  !allocate(D1R2_i(ng1, dim1_nbin, dim2_nbin))
   allocate(xi_r(dim1_nbin, dim2_nbin))
   if (estimator .eq. 'LS') then
     allocate(R1D2(dim1_nbin, dim2_nbin))
-    allocate(R1D2_i(nr1, dim1_nbin, dim2_nbin))
     allocate(R1R2(dim1_nbin, dim2_nbin))
-    allocate(R1R2_i(nr1, dim1_nbin, dim2_nbin))
   end if
 
   call binning(dim1_min, dim1_max, dim1_nbin, rbin, rbin_edges, rwidth)
@@ -151,9 +146,7 @@ program tpccf_rmu
   irwidth = 1 / rwidth
   imuwidth = 1 / muwidth
    if (estimator .eq. 'LS') then
-    R1D2_i = 0
     R1D2 = 0
-    R1R2_i = 0
     R1R2 = 0
   end if
 
@@ -231,7 +224,8 @@ program tpccf_rmu
   if (estimator .eq. 'LS') then
     ! Loop over randoms # 1
     !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
-    !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind, mu, muind)
+    !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind, mu, muind) &
+    !$OMP REDUCTION(+:R1R2, R1D2)
     do i = 1, nr1
 
       ipx = int((random1(1, i) - gridmin) / rgrid + 1.)
@@ -258,7 +252,7 @@ program tpccf_rmu
                   mu = disz / dis ! assumes LOS is (0, 0, 1)
                   rind = int((dis - dim1_min) * irwidth + 1)
                   muind = int((mu - dim2_min) * imuwidth + 1)
-                  R1R2_i(i, rind, muind) = R1R2_i(i, rind, muind) + weight_random1(i) * weight_random2(ii)
+                  R1R2(rind, muind) = R1R2(rind, muind) + weight_random1(i) * weight_random2(ii)
                 end if
 
                   if(ii .eq. lirst_random2(ix, iy, iz)) exit
@@ -281,7 +275,7 @@ program tpccf_rmu
                   mu = disz / dis ! assumes LOS is (0, 0, 1)
                   rind = int((dis - dim1_min) * irwidth + 1)
                   muind = int((mu - dim2_min) * imuwidth + 1)
-                  R1D2_i(i, rind, muind) = R1D2_i(i, rind, muind) + weight_random1(i) * weight_data2(ii)
+                  R1D2(rind, muind) = R1D2(rind, muind) + weight_random1(i) * weight_data2(ii)
                 end if
 
                   if(ii .eq. lirst_random2(ix, iy, iz)) exit
@@ -297,8 +291,6 @@ program tpccf_rmu
     !$OMP END PARALLEL DO
   end if
 
-  write(*,*) 'I made it all the way here'
-
   ! ! Add up pair counts
   ! do i = 1, dim1_nbin
   !   do ii = 1, dim2_nbin
@@ -310,12 +302,6 @@ program tpccf_rmu
   !     end if
   !   end do
   ! end do
-
-  call system_clock(end)
-  if (debug) then
-    print *, "elapsed time: ", real(end - beginning) / real(rate)
-  end if
-  stop
 
   ! Normalize pair counts
   D1D2 = D1D2 * 1. / (SUM(weight_data1) * SUM(weight_data2))
@@ -344,11 +330,11 @@ program tpccf_rmu
   do i = 1, dim1_nbin
     do ii = 1, dim2_nbin
       if (estimator .eq. 'LS') then
-        write(12, fmt='(7E15.5)') rbin(i), mubin(ii), xi_r(i, ii), SUM(D1D2_i(:, i, ii)),&
-        & SUM(D1R2_i(:, i, ii)), SUM(R1D2_i(:, i, ii)), SUM(R1R2_i(:, i, ii))
+        write(12, fmt='(7E15.5)') rbin(i), mubin(ii), xi_r(i, ii), D1D2(i, ii),&
+        & D1R2(i, ii), R1D2(i, ii), R1R2(i, ii)
       else
-        write(12, fmt='(5E15.5)') rbin(i), mubin(ii), xi_r(i, ii), SUM(D1D2_i(:, i, ii)),&
-        & SUM(D1R2_i(:, i, ii))
+        write(12, fmt='(5E15.5)') rbin(i), mubin(ii), xi_r(i, ii), D1D2(i, ii),&
+        & D1R2(i, ii)
       end if
     end do
   end do
