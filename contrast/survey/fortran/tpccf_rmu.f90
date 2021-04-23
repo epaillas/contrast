@@ -164,7 +164,8 @@ program tpccf_rmu
 
   ! Loop over data 1
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
-  !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind, mu, muind)
+  !$OMP ix, iy, iz, disx, disy, disz, dis, dis2, rind, mu, muind) &
+  !$OMP REDUCTION(+:D1D2, R1R2)
   do i = 1, ng1
 
     ipx = int((data1(1, i) - gridmin) / rgrid + 1.)
@@ -191,7 +192,7 @@ program tpccf_rmu
                 mu = disz / dis ! assumes LOS is (0, 0, 1)
                 rind = int((dis - dim1_min) * irwidth + 1)
                 muind = int((mu - dim2_min) * imuwidth + 1)
-                D1D2_i(i, rind, muind) = D1D2_i(i, rind, muind) + weight_data1(i) * weight_data2(ii)
+                D1D2(rind, muind) = D1D2(rind, muind) + weight_data1(i) * weight_data2(ii)
               end if
 
               if(ii .eq. lirst_data2(ix, iy, iz)) exit
@@ -214,7 +215,7 @@ program tpccf_rmu
                 mu = disz / dis ! assumes LOS is (0, 0, 1)
                 rind = int((dis - dim1_min) * irwidth + 1)
                 muind = int((mu - dim2_min) * imuwidth + 1)
-                D1R2_i(i, rind, muind) = D1R2_i(i, rind, muind) + weight_data1(i) * weight_random2(ii)
+                D1R2(rind, muind) = D1R2(rind, muind) + weight_data1(i) * weight_random2(ii)
               end if
 
               if (ii .eq. lirst_random2(ix, iy, iz)) exit
@@ -296,17 +297,19 @@ program tpccf_rmu
     !$OMP END PARALLEL DO
   end if
 
-  ! Add up pair counts
-  do i = 1, dim1_nbin
-    do ii = 1, dim2_nbin
-      D1D2(i, ii) = SUM(D1D2_i(:, i, ii))
-      D1R2(i, ii) = SUM(D1R2_i(:, i, ii))
-      if (estimator .eq. 'LS') then
-        R1R2(i, ii) = SUM(R1R2_i(:, i, ii))
-        R1D2(i, ii) = SUM(R1D2_i(:, i, ii))
-      end if
-    end do
-  end do
+  ! ! Add up pair counts
+  ! do i = 1, dim1_nbin
+  !   do ii = 1, dim2_nbin
+  !     D1D2(i, ii) = SUM(D1D2_i(:, i, ii))
+  !     D1R2(i, ii) = SUM(D1R2_i(:, i, ii))
+  !     if (estimator .eq. 'LS') then
+  !       R1R2(i, ii) = SUM(R1R2_i(:, i, ii))
+  !       R1D2(i, ii) = SUM(R1D2_i(:, i, ii))
+  !     end if
+  !   end do
+  ! end do
+
+  stop
 
   ! Normalize pair counts
   D1D2 = D1D2 * 1. / (SUM(weight_data1) * SUM(weight_data2))
