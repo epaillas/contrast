@@ -126,9 +126,9 @@ program tpccf_rmu
   call linked_list(random2, ngrid, gridmin, gridmax, ll_random2, lirst_random2, rgrid)
 
   allocate(D1D2(dim1_nbin, dim2_nbin))
-  allocate(D1D2_i(ng1, dim1_nbin, dim2_nbin))
+  !allocate(D1D2_i(ng1, dim1_nbin, dim2_nbin))
   allocate(D1R2(dim1_nbin, dim2_nbin))
-  allocate(D1R2_i(ng1, dim1_nbin, dim2_nbin))
+  !allocate(D1R2_i(ng1, dim1_nbin, dim2_nbin))
   allocate(xi_r(dim1_nbin, dim2_nbin))
   if (estimator .eq. 'LS') then
     allocate(R1D2(dim1_nbin, dim2_nbin))
@@ -141,9 +141,9 @@ program tpccf_rmu
   call binning(dim2_min, dim2_max, dim2_nbin, mubin, mubin_edges, muwidth)
 
   D1D2 = 0
-  D1D2_i = 0
+  !D1D2_i = 0
   D1R2 = 0
-  D1R2_i = 0
+  !D1R2_i = 0
   xi_r = 0
   dim1_min2 = dim1_min ** 2
   dim1_max2 = dim1_max ** 2
