@@ -77,3 +77,30 @@ def mean_from_mocks(input_handle, output_filename,
   np.savetxt(output_filename, cout)
 
   return cout
+
+def covariance_matrix(data, norm=False):
+    """
+    Assumes rows are observations,
+    columns are variables
+    """
+    nobs, nbins = np.shape(data)
+    mean = np.mean(data, axis=0)
+    cov = np.zeros([nbins, nbins])
+
+    for k in range(nobs):
+        for i in range(nbins):
+            for j in range(nbins):
+                cov[i, j] += (data[k, i] - mean[i])*(data[k, j] - mean[j])
+
+    cov /= nobs - 1
+    
+    if norm:
+        corr = np.zeros_like(cov)
+        for i in range(nbins):
+            for j in range(nbins):
+                corr[i, j] = cov[i, j] / np.sqrt(cov[i, i] * cov[j, j])
+        return corr
+    else:
+        return cov
+
+
