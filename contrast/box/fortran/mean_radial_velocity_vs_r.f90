@@ -88,6 +88,7 @@ program mean_radial_velocity_vs_r
 
   allocate(D1D2(dim1_nbin))
   allocate(V1V2(dim1_nbin))
+  allocate(mean_vr(dim1_nbin))
   D1D2 = 0
   V1V2 = 0
   dim1_min2 = dim1_min ** 2
