@@ -11,10 +11,10 @@ EXES = tpcf.exe mean_radial_velocity_vs_r.exe tpcf_2d.exe tpcf_ap.exe
 all: $(EXES)
 
 tpcf.exe: tpcf.f90
-	$(FC) -fopenmp tpcf.f90 -o tpcf.exe $(MLIBS)
+	$(FC) -fopenmp procedures.f90 tpcf.f90 -o tpcf.exe $(MLIBS)
 
 mean_radial_velocity_vs_r.exe: mean_radial_velocity_vs_r.f90
-	$(FC) -fopenmp mean_radial_velocity_vs_r.f90 -o mean_radial_velocity_vs_r.exe $(MLIBS)
+	$(FC) -fopenmp procedures.f90 mean_radial_velocity_vs_r.f90 -o mean_radial_velocity_vs_r.exe $(MLIBS)
 
 tpcf_2d.exe: tpcf_2d.o
 	$(FC) tpcf_2d.o -o tpcf_2d.exe $(MLIBS)
