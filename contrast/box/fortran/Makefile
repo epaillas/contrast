@@ -6,7 +6,7 @@ MLIBS =
 
 #################
 
-EXES = tpcf.exe mean_radial_velocity_vs_r.exe tpcf_2d.exe tpcf_ap.exe
+EXES = tpcf.exe mean_radial_velocity_vs_r.exe std_los_velocity_vs_rmu.exe tpcf_2d.exe tpcf_ap.exe
 
 all: $(EXES)
 
@@ -15,6 +15,9 @@ tpcf.exe: tpcf.f90
 
 mean_radial_velocity_vs_r.exe: mean_radial_velocity_vs_r.f90
 	$(FC) -fopenmp procedures.f90 mean_radial_velocity_vs_r.f90 -o mean_radial_velocity_vs_r.exe $(MLIBS)
+
+std_los_velocity_vs_rmu.exe: std_los_velocity_vs_rmu.f90
+	$(FC) -fopenmp procedures.f90 std_los_velocity_vs_rmu.f90 -o std_los_velocity_vs_rmu.exe $(MLIBS)
 
 tpcf_2d.exe: tpcf_2d.o
 	$(FC) tpcf_2d.o -o tpcf_2d.exe $(MLIBS)
