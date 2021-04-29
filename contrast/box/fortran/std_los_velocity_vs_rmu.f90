@@ -4,7 +4,7 @@ program mean_radial_velocity_vs_r
   implicit none
   
   real*8 :: rgrid, boxsize
-  real*8 :: disx, disy, disz, dis, dis2, vr, mu
+  real*8 :: disx, disy, disz, dis, dis2, vlos, mu
   real*8 :: velx, vely, velz, comx, comy, comz
   real*8 :: rwidth, irwidth, dim1_max, dim1_min, dim1_min2, dim1_max2
   real*8 :: dim2_max, dim2_min, muwidth, imuwidth
@@ -111,6 +111,9 @@ program mean_radial_velocity_vs_r
   ndif = int(dim1_max / rgrid + 1.)
   irwidth = 1 / rwidth
   imuwidth = 1 / muwidth
+  comx = 0
+  comy = 0
+  comz = 1 ! assume line-of-sight is the z-axis
 
   call OMP_SET_NUM_THREADS(nthreads)
   if (debug) then
@@ -119,8 +122,7 @@ program mean_radial_velocity_vs_r
   
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
   !$OMP ix, iy, iz, ix2, iy2, iz2, disx, disy, disz, dis, dis2, rind, &
-  !$OMP vr, velx, vely, velz, comx, comy, comz, mu, muind) &
-  !$OMP REDUCTION(+:D1D2, V1V2, V1V2_sq)
+  !$OMP vr, velx, vely, velz, mu, muind) REDUCTION(+:D1D2, V1V2, V1V2_sq)
   do i = 1, ndata1
     ipx = int(data1(1, i) / rgrid + 1.)
     ipy = int(data1(2, i) / rgrid + 1.)
@@ -172,11 +174,7 @@ program mean_radial_velocity_vs_r
                   velz = data2(6, ii)
                 end if
 
-                vr = (velx * disx + vely * disy + velz * disz) / dis
-
-                comx = 0
-                comy = 0
-                comz = 1 ! assume line-of-sight is the z-axis
+                vlos = velx * comx + vely * comy + velz * comz
 
                 mu = (disx * comx + disy * comy + disz * comz) &
                 & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
@@ -184,8 +182,8 @@ program mean_radial_velocity_vs_r
                 rind = int((dis - dim1_min) * irwidth + 1)
                 muind = int((mu - dim2_min) * imuwidth + 1)
                 D1D2(rind, muind) = D1D2(rind, muind) + weight1(i) * weight2(ii)
-                V1V2(rind, muind) = V1V2(rind, muind) + vr
-                V1V2_sq(rind, muind) = V1V2_sq(rind, muind) + vr ** 2
+                V1V2(rind, muind) = V1V2(rind, muind) + vlos
+                V1V2_sq(rind, muind) = V1V2_sq(rind, muind) + vlos ** 2
               end if
   
               if(ii.eq.lirst(ix2,iy2,iz2)) exit
