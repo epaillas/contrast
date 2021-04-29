@@ -125,7 +125,7 @@ program mean_radial_velocity_vs_r
   
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
   !$OMP ix, iy, iz, ix2, iy2, iz2, disx, disy, disz, dis, dis2, rind, &
-  !$OMP vlos, velx, vely, velz, mu, muind, comx, comy, comz) REDUCTION(+:D1D2,V1V2,V1V2_sq)
+  !$OMP vlos, velx, vely, velz, mu, muind) REDUCTION(+:D1D2,V1V2,V1V2_sq)
   do i = 1, ndata1
     ipx = int(data1(1, i) / rgrid + 1.)
     ipy = int(data1(2, i) / rgrid + 1.)
@@ -177,16 +177,12 @@ program mean_radial_velocity_vs_r
                   velz = data2(6, ii)
                 end if
 
-                comx = 0
-                comy = 0
-                comz = 1
-
                 vlos = velx * comx + vely * comy + velz * comz
 
                 mu = (disx * comx + disy * comy + disz * comz) &
                 & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
 
-                if (mu .eq. 1) cycle
+                if (mu .eq. 1) cycle ! might have to deal with this later
 
                 rind = int((dis - dim1_min) * irwidth + 1)
                 muind = int((mu - dim2_min) * imuwidth + 1)
