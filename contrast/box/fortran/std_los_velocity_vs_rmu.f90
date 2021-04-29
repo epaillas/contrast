@@ -186,7 +186,7 @@ program mean_radial_velocity_vs_r
                 muind = int((mu - dim2_min) * imuwidth + 1)
                 D1D2(rind, muind) = D1D2(rind, muind) + weight1(i) * weight2(ii)
                 V1V2(rind, muind) = V1V2(rind, muind) + vlos
-                V1V2_sq(rind, muind) = V1V2_sq(rind, muind) + vlos ** 2
+                V1V2_sq(rind, muind) = V1V2_sq(rind, muind) + vlos * vlos
               end if
   
               if(ii.eq.lirst(ix2,iy2,iz2)) exit
