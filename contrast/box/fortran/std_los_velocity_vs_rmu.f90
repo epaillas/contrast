@@ -78,7 +78,7 @@ program mean_radial_velocity_vs_r
 
   if (debug) then
     write(*,*) '-----------------------'
-    write(*,*) 'Running tpcf.exe'
+    write(*,*) 'Running std_los_velocity_vs_rmu.exe'
     write(*,*) 'input parameters:'
     write(*,*) ''
     write(*, *) 'data_filename: ', trim(data_filename1)
@@ -88,6 +88,9 @@ program mean_radial_velocity_vs_r
     write(*, *) 'dim1_min: ', trim(dim1_min_char), ' Mpc'
     write(*, *) 'dim1_max: ', trim(dim1_max_char), ' Mpc'
     write(*, *) 'dim1_nbin: ', trim(dim1_nbin_char)
+    write(*, *) 'dim2_min: ', trim(dim2_min_char)
+    write(*, *) 'dim2_max: ', trim(dim2_max_char)
+    write(*, *) 'dim2_nbin: ', trim(dim2_nbin_char)
     write(*, *) 'ngrid: ', trim(ngrid_char)
     write(*, *) 'nthreads: ', trim(nthreads_char)
     write(*,*) ''
@@ -195,6 +198,8 @@ program mean_radial_velocity_vs_r
     end do
   end do
   !$OMP END PARALLEL DO
+
+  write(*,*) 'im ok'
 
   do i = 1, dim1_nbin
     do ii = 1, dim2_nbin
