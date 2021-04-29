@@ -177,14 +177,16 @@ program mean_radial_velocity_vs_r
                   velz = data2(6, ii)
                 end if
 
-                comx = 0.5 * (data1(1, i) + data2(1, ii))
-                comy = 0.5 * (data1(2, i) + data2(2, ii))
-                comz = 0.5 * (data1(2, i) + data2(3, ii))
+                comx = 0
+                comy = 0
+                comz = 1
 
                 vlos = velx * comx + vely * comy + velz * comz
 
                 mu = (disx * comx + disy * comy + disz * comz) &
                 & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
+
+                write(*,*) mu
         
                 rind = int((dis - dim1_min) * irwidth + 1)
                 muind = int((mu - dim2_min) * imuwidth + 1)
