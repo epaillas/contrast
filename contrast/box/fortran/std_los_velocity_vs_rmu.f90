@@ -181,11 +181,11 @@ program mean_radial_velocity_vs_r
                 mu = (disx * comx + disy * comy + disz * comz) &
                 & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
         
-
                 rind = int((dis - dim1_min) * irwidth + 1)
                 muind = int((mu - dim2_min) * imuwidth + 1)
                 D1D2(rind, muind) = D1D2(rind, muind) + weight1(i) * weight2(ii)
                 V1V2(rind, muind) = V1V2(rind, muind) + vr
+                V1V2_sq(rind, muind) = V1V2_sq(rind, muind) + vr ** 2
               end if
   
               if(ii.eq.lirst(ix2,iy2,iz2)) exit
