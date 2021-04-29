@@ -174,9 +174,9 @@ program mean_radial_velocity_vs_r
 
                 vr = (velx * disx + vely * disy + velz * disz) / dis
 
-                comx = 0.5 * (data1(1, i) + data2(1, ii))
-                comy = 0.5 * (data1(2, i) + data2(2, ii))
-                comz = 0.5 * (data1(2, i) + data2(3, ii))
+                comx = 0
+                comy = 0
+                comz = 1 ! assume line-of-sight is the z-axis
 
                 mu = (disx * comx + disy * comy + disz * comz) &
                 & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
