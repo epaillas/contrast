@@ -186,8 +186,6 @@ program mean_radial_velocity_vs_r
                 mu = (disx * comx + disy * comy + disz * comz) &
                 & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
 
-                write(*,*) mu
-        
                 rind = int((dis - dim1_min) * irwidth + 1)
                 muind = int((mu - dim2_min) * imuwidth + 1)
                 D1D2(rind, muind) = D1D2(rind, muind) + weight1(i) * weight2(ii)
