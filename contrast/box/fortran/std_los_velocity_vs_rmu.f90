@@ -122,7 +122,7 @@ program mean_radial_velocity_vs_r
   
   !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i, ii, ipx, ipy, ipz, &
   !$OMP ix, iy, iz, ix2, iy2, iz2, disx, disy, disz, dis, dis2, rind, &
-  !$OMP vr, velx, vely, velz, mu, muind) REDUCTION(+:D1D2, V1V2, V1V2_sq)
+  !$OMP vlos, velx, vely, velz, mu, muind) REDUCTION(+:D1D2, V1V2, V1V2_sq)
   do i = 1, ndata1
     ipx = int(data1(1, i) / rgrid + 1.)
     ipy = int(data1(2, i) / rgrid + 1.)
