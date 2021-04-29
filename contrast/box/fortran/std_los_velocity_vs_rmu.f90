@@ -162,7 +162,7 @@ program mean_radial_velocity_vs_r
               if (disz .lt. -boxsize/2) disz = disz + boxsize
               if (disz .gt. boxsize/2) disz = disz - boxsize
 
-              dis2 = disx ** 2 + disy **2 + disz ** 2
+              dis2 = disx * disx + disy * disy + disz * disz
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
@@ -177,10 +177,10 @@ program mean_radial_velocity_vs_r
                   velz = data2(6, ii)
                 end if
 
-                vlos = velx * comx + vely * comy + velz * comz
+                vlos = velz
 
                 mu = (disx * comx + disy * comy + disz * comz) &
-                & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
+                & / dis 
         
                 rind = int((dis - dim1_min) * irwidth + 1)
                 muind = int((mu - dim2_min) * imuwidth + 1)

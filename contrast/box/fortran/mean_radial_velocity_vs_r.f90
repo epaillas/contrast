@@ -139,7 +139,7 @@ program mean_radial_velocity_vs_r
               if (disz .lt. -boxsize/2) disz = disz + boxsize
               if (disz .gt. boxsize/2) disz = disz - boxsize
 
-              dis2 = disx ** 2 + disy **2 + disz ** 2
+              dis2 = disx * disx + disy * disy + disz * disz
 
               if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
                 dis = sqrt(dis2)
