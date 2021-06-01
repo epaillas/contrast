@@ -7,7 +7,7 @@ MLIBS =
 
 #################
 
-EXES = tpcf.exe tpccf_monopole.exe tpccf_rmu.exe
+EXES = tpcf.exe tpccf_monopole.exe tpccf_monopole_2d.exe tpccf_rmu.exe
 
 all: $(EXES)
 
@@ -16,6 +16,9 @@ tpcf.exe: tpcf.f90
 
 tpccf_monopole.exe: tpccf_monopole.f90
 	$(FC) -fopenmp procedures.f90 tpccf_monopole.f90 -o tpccf_monopole.exe $(MLIBS)
+
+tpccf_monopole_2d.exe: tpccf_monopole_2d.f90
+	$(FC) -fopenmp procedures.f90 tpccf_monopole_2d.f90 -o tpccf_monopole_2d.exe $(MLIBS)
 
 tpccf_rmu.exe: tpccf_rmu.f90
 	$(FC) -fopenmp procedures.f90 tpccf_rmu.f90 -o tpccf_rmu.exe $(MLIBS)
