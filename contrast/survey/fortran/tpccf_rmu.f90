@@ -32,7 +32,7 @@ program tpccf_rmu
   character(len=10) :: nthreads_char, gridmin_char, gridmax_char, ngrid_char
   character(len=2) :: estimator
 
-  logical :: debug = .true.
+  logical :: debug = .true., autocorr = .false.
   
   if (debug) then
     if (iargc() .lt. 16) then
@@ -76,6 +76,8 @@ program tpccf_rmu
   call get_command_argument(number=14, value=gridmax_char)
   call get_command_argument(number=15, value=estimator)
   call get_command_argument(number=16, value=nthreads_char)
+
+  if (data_filename1 .eq. data_filename2) autocorr = .true.
   
   read(dim1_min_char, *) dim1_min
   read(dim1_max_char, *) dim1_max
@@ -136,9 +138,7 @@ program tpccf_rmu
   call binning(dim2_min, dim2_max, dim2_nbin, mubin, mubin_edges, muwidth)
 
   D1D2 = 0
-  !D1D2_i = 0
   D1R2 = 0
-  !D1R2_i = 0
   xi_r = 0
   dim1_min2 = dim1_min ** 2
   dim1_max2 = dim1_max ** 2
@@ -272,33 +272,34 @@ program tpccf_rmu
               end do
             end if
 
-            ii = lirst_data2(ix, iy, iz)
-            if (ii .ne. 0) then
-              do
-                ii = ll_data2(ii)
-                disx = data2(1, ii) - random1(1, i)
-                disy = data2(2, ii) - random1(2, i)
-                disz = data2(3, ii) - random1(3, i)
+            if (.not. autocorr) then
+                ii = lirst_data2(ix, iy, iz)
+                if (ii .ne. 0) then
+                  do
+                    ii = ll_data2(ii)
+                    disx = data2(1, ii) - random1(1, i)
+                    disy = data2(2, ii) - random1(2, i)
+                    disz = data2(3, ii) - random1(3, i)
 
-                dis2 = disx * disx + disy * disy + disz * disz
+                    dis2 = disx * disx + disy * disy + disz * disz
 
-                if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
-                  dis = sqrt(dis2)
-                  comx = 0.5 * (random1(1, i) + data2(1, ii))
-                  comy = 0.5 * (random1(2, i) + data2(2, ii))
-                  comz = 0.5 * (random1(2, i) + data2(3, ii))
-                  mu = (disx * comx + disy * comy + disz * comz) &
-                  & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
-                  rind = int((dis - dim1_min) * irwidth + 1)
-                  muind = int((mu - dim2_min) * imuwidth + 1)
-                  R1D2(rind, muind) = R1D2(rind, muind) + weight_random1(i) * weight_data2(ii)
+                    if (dis2 .gt. dim1_min2 .and. dis2 .lt. dim1_max2) then
+                      dis = sqrt(dis2)
+                      comx = 0.5 * (random1(1, i) + data2(1, ii))
+                      comy = 0.5 * (random1(2, i) + data2(2, ii))
+                      comz = 0.5 * (random1(2, i) + data2(3, ii))
+                      mu = (disx * comx + disy * comy + disz * comz) &
+                      & / (dis * sqrt(comx * comx + comy * comy + comz * comz))
+                      rind = int((dis - dim1_min) * irwidth + 1)
+                      muind = int((mu - dim2_min) * imuwidth + 1)
+                      R1D2(rind, muind) = R1D2(rind, muind) + weight_random1(i) * weight_data2(ii)
+                    end if
+
+                      if(ii .eq. lirst_random2(ix, iy, iz)) exit
+
+                  end do
                 end if
-
-                  if(ii .eq. lirst_random2(ix, iy, iz)) exit
-
-              end do
             end if
-
 
           end do
         end do
@@ -319,7 +320,11 @@ program tpccf_rmu
   if (estimator .eq. 'DP') then
     xi_r = (D1D2 / D1R2) - 1
   else if (estimator .eq. 'LS') then
-    xi_r = (D1D2 - D1R2 - R1D2 + R1R2) / R1R2
+    if (autocorr) then
+        xi_r = (D1D2 - 2 * D1R2 + R1R2) / R1R2
+    else
+        xi_r = (D1D2 - D1R2 - R1D2 + R1R2) / R1R2
+    end if
   else
     write(*,*) 'Estimator for the correlation function was not recognized.'
     stop
