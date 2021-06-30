@@ -29,8 +29,7 @@ def mean_from_mocks(input_handle, output_filename):
     data_mean = np.nanmean(data_list, axis=0)
     data_mean = np.nan_to_num(data_mean)
 
-    fmt = np.shape(data_mean)[1] * '%15.5f '
-    np.savetxt(output_filename, data_mean, fmt=fmt)
+    np.savetxt(output_filename, data_mean)
 
 
 def save_as_unformatted(data, filename):
