@@ -10,6 +10,9 @@ import sys
 from shutil import rmtree
 
 from setuptools import find_packages, setup, Command
+from setuptools.command.build_ext import build_ext
+import distutils.command.build
+import subprocess
 
 # Package meta-data.
 NAME = 'contrast'
@@ -92,6 +95,18 @@ class UploadCommand(Command):
         sys.exit()
 
 
+class BuildCommand(distutils.command.build.build):
+  """Customized setuptools build command - builds protos on build."""
+  def run(self):
+    distutils.command.build.build.run(self)
+    command = "cd contrast/box"
+    command += " && make"
+    command += " && cd ../survey"
+    command += " && make"
+    process = subprocess.Popen(command, shell=True)
+    process.wait()
+
+
 # Where the magic happens:
 setup(
     name=NAME,
@@ -113,6 +128,7 @@ setup(
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
+    has_ext_modules=lambda: True,
     license='MIT',
     classifiers=[
         # Trove classifiers
@@ -126,6 +142,7 @@ setup(
     ],
     # $ setup.py publish support.
     cmdclass={
+        'build': BuildCommand,
         'upload': UploadCommand,
     },
 )

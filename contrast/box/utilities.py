@@ -7,10 +7,6 @@ from scipy.special import eval_legendre
 from scipy.integrate import simps
 
 
-
-
-
-
 def save_as_unformatted(data, filename):
     '''
     Saves a numpy array as an unformatted
