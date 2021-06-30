@@ -1,10 +1,36 @@
-import sys
+import glob
 import numpy as np
 from scipy.io import FortranFile
-import argparse
 from scipy.interpolate import InterpolatedUnivariateSpline
 from scipy.special import eval_legendre
 from scipy.integrate import simps
+
+
+def mean_from_mocks(input_handle, output_filename):
+    '''
+    Averages a Contrast measurement over multiple
+    mock realizations.
+
+    Parameters: input_handle: str
+                Handle containing a wildcard that is used
+                to list all realizations of the measurement.
+
+                output_filename: str
+                Name of the output file.
+    '''
+    mock_files = sorted(glob.glob(input_handle))
+    data_list = []
+
+    for mock_file in mock_files:
+        data = np.genfromtxt(mock_file)
+        data_list.append(data)
+
+    data_list = np.asarray(data_list)
+    data_mean = np.nanmean(data_list, axis=0)
+    data_mean = np.nan_to_num(data_mean)
+
+    fmt = np.shape(data_mean)[1] * '%15.5f '
+    np.savetxt(output_filename, data_mean, fmt=fmt)
 
 
 def save_as_unformatted(data, filename):
@@ -28,6 +54,7 @@ def save_as_unformatted(data, filename):
     f.write_record(ncols)
     f.write_record(data)
     f.close()
+
 
 def read_array_2d(filename):
     '''
@@ -59,6 +86,7 @@ def read_array_2d(filename):
                 result[j, i] = data[counter, 2]
                 counter += 1
     return dim1, dim2, result
+
 
 def get_multipole(ell, s, mu, xi_smu):
     '''
@@ -97,7 +125,7 @@ def get_multipole(ell, s, mu, xi_smu):
 
 
 def CovarianceMatrix(data, norm=False):
-    ''' 
+    '''
     Calculates the covariance matrix of an array
     of measurements.
 
@@ -128,8 +156,9 @@ def CovarianceMatrix(data, norm=False):
     else:
         return cov
 
+
 def CrossCovarianceMatrix(data1, data2, norm=False):
-    ''' 
+    '''
     Calculates the cross-covariance matrix of two
     sets of measurements.
 
