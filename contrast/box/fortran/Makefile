@@ -6,31 +6,24 @@ MLIBS =
 
 #################
 
-EXES = tpcf.exe mean_radial_velocity_vs_r.exe std_los_velocity_vs_rmu.exe tpcf_2d.exe tpcf_ap.exe
+EXES = tpcf_monopole.exe tpcf_rmu.exe mean_radial_velocity_monopole.exe std_los_velocity_rmu.exe tpcf_2d.exe
 
 all: $(EXES)
 
-tpcf.exe: tpcf.f90
-	$(FC) -fopenmp procedures.f90 tpcf.f90 -o tpcf.exe $(MLIBS)
+tpcf_monopole.exe: tpcf_monopole.f90
+	$(FC) -fopenmp procedures.f90 tpcf_monopole.f90 -o tpcf_monopole.exe $(MLIBS)
 
-mean_radial_velocity_vs_r.exe: mean_radial_velocity_vs_r.f90
-	$(FC) -fopenmp procedures.f90 mean_radial_velocity_vs_r.f90 -o mean_radial_velocity_vs_r.exe $(MLIBS)
+tpcf_rmu.exe: tpcf_rmu.f90
+	$(FC) -fopenmp procedures.f90 tpcf_rmu.f90 -o tpcf_rmu.exe $(MLIBS)
 
-std_los_velocity_vs_rmu.exe: std_los_velocity_vs_rmu.f90
-	$(FC) -fopenmp procedures.f90 std_los_velocity_vs_rmu.f90 -o std_los_velocity_vs_rmu.exe $(MLIBS)
+mean_radial_velocity_monopole.exe: mean_radial_velocity_monopole.f90
+	$(FC) -fopenmp procedures.f90 mean_radial_velocity_monopole.f90 -o mean_radial_velocity_monopole.exe $(MLIBS)
 
-tpcf_2d.exe: tpcf_2d.o
-	$(FC) tpcf_2d.o -o tpcf_2d.exe $(MLIBS)
+std_los_velocity_rmu.exe: std_los_velocity_rmu.f90
+	$(FC) -fopenmp procedures.f90 std_los_velocity_rmu.f90 -o std_los_velocity_rmu.exe $(MLIBS)
 
-tpcf_ap.exe: tpcf_ap.o
-	$(FC) tpcf_ap.o -o tpcf_ap.exe $(MLIBS)
-	
-
-tpcf_2d.o: tpcf_2d.f90
-	$(FC) -c tpcf_2d.f90
-
-tpcf_ap.o: tpcf_ap.f90
-	$(FC) -c tpcf_ap.f90
+tpcf_2d.exe: tpcf_2d.f90
+	$(FC) -fopenmp procedures.f90 tpcf_2d.f90 -o tpcf_2d.exe $(MLIBS)
 
 
 install: $(EXES)
