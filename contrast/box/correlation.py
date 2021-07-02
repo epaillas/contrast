@@ -7,7 +7,7 @@ import numpy as np
 def tpcf_monopole(
   data_filename1, output_filename,
   box_size, dim1_min, dim1_max,
-  dim1_nbin, ngrid, data_filename2=None, 
+  dim1_nbin, ngrid, data_filename2=None,
   nthreads=1
 ):
   '''
@@ -205,7 +205,7 @@ def mean_radial_velocity_monopole(
   return r, corr
 
 def tpcf_rmu(
-    data_filename1, data_filename2, output_filename,
+    data_filename1, output_filename,
     box_size, dim1_min, dim1_max,
     dim1_nbin, ngrid, data_filename2=None,
     dim2_min=-1, dim2_max=1, dim2_nbin=80,
@@ -290,7 +290,7 @@ def tpcf_rmu(
 
 
 def std_los_velocity_rmu(
-    data_filename1, data_filename2, output_filename,
+    data_filename1, output_filename,
     box_size, dim1_min, dim1_max,
     dim1_nbin, ngrid, data_filename2=None,
     dim2_min=-1, dim2_max=1, dim2_nbin=80,
