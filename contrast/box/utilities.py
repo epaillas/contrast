@@ -123,7 +123,7 @@ def get_multipole(ell, s, mu, xi_smu):
     return s, multipole
 
 
-def CovarianceMatrix(data, norm=False):
+def covariance_matrix(data, norm=False):
     '''
     Calculates the covariance matrix of an array
     of measurements.
@@ -156,7 +156,7 @@ def CovarianceMatrix(data, norm=False):
         return cov
 
 
-def CrossCovarianceMatrix(data1, data2, norm=False):
+def cross_covariance_matrix(data1, data2, norm=False):
     '''
     Calculates the cross-covariance matrix of two
     sets of measurements.
@@ -188,3 +188,132 @@ def CrossCovarianceMatrix(data1, data2, norm=False):
         return corr
     else:
         return cov
+
+
+def covariance_multipoles(input_handle, smin, smax, multipoles='0+2'):
+    '''
+    Calculates the covariance matrix of the multipole
+    moments of the redshift-space correlation function
+
+    Parameters:  input_handle: str
+
+                 smin: float
+
+                 smax: float
+
+                 multipoles: ND array_like
+    '''
+    smin = float(smin)
+    smax = float(smax)
+    files_mocks = sorted(glob.glob(input_handle))
+    mock_datavec = []
+
+    for fname in files_mocks:
+        s, mu, xi_smu_mock = read_array_2d(fname)
+        s, xi0 = get_multipole(0, s, mu, xi_smu_mock)
+        s, xi2 = get_multipole(2, s, mu, xi_smu_mock)
+        s, xi4 = get_multipole(4, s, mu, xi_smu_mock)
+
+        # only keep scales to fit later
+        idx = (s >= smin) & (s <= smax)
+        s = s[idx]
+        xi0 = xi0[idx]
+        xi2 = xi2[idx]
+        xi4 = xi4[idx]
+
+        if multipoles == '0+2':
+            datavec = np.concatenate((xi0, xi2))
+        elif multipoles == '0+2+4':
+            datavec = np.concatenate((xi0, xi2, xi4))
+        elif multipoles == '0':
+            datavec = xi0
+        elif multipoles == '2':
+            datavec = xi2
+        elif multipoles == '4':
+            datavec = xi4
+        else:
+            raise ValueError('Unrecognized input argument '
+                             'for the multipole moments.')
+
+        mock_datavec.append(datavec)
+
+    mock_datavec = np.asarray(mock_datavec)
+    cov = covariance_matrix(mock_datavec)
+
+    return cov
+
+
+def joint_covariance_multipoles(
+    input_handle,
+    smins,
+    smaxs,
+    multipoles
+):
+    '''
+    Calculates the covariance matrix of the multipole
+    moments of a joint redshift-space correlation
+    function measurement.
+
+    Parameters:  input_handle: str
+
+                 smin: float
+
+                 smax: float
+
+                 multipoles: ND array_like
+    '''
+
+    input_handle = input_handle.split(',')
+    smins = [float(i) for i in smins.split(',')]
+    smaxs = [float(i) for i in smaxs.split(',')]
+    ndenbins = len(input_handle)
+
+    files_mocks = {}
+    smin = {}
+    smax = {}
+    for j in range(ndenbins):
+        denbin = 'den{}'.format(j)
+        files_mocks[denbin] = sorted(glob.glob(input_handle[j]))
+        smin[denbin] = smins[j]
+        smax[denbin] = smaxs[j]
+
+    nmocks = len(files_mocks['den0'])
+    mock_datavec = []
+
+    for i in range(nmocks):
+        datavec = np.array([])
+        for j in range(ndenbins):
+            denbin = 'den{}'.format(j)
+            fname = files_mocks[denbin][i]
+            s, mu, xi_smu_mock = read_array_2d(fname)
+            s, xi0 = get_multipole(0, s, mu, xi_smu_mock)
+            s, xi2 = get_multipole(2, s, mu, xi_smu_mock)
+            s, xi4 = get_multipole(4, s, mu, xi_smu_mock)
+
+            # only keep scales to fit later
+            fitscale = (s >= smin[denbin]) & (s <= smax[denbin])
+            s = s[fitscale]
+            xi0 = xi0[fitscale]
+            xi2 = xi2[fitscale]
+            xi4 = xi4[fitscale]
+
+            if multipoles == '0+2':
+                datavec = np.concatenate((datavec, xi0, xi2))
+            elif multipoles == '0+2+4':
+                datavec = np.concatenate((datavec, xi0, xi2, xi4))
+            elif multipoles == '0':
+                datavec = np.concatenate((datavec, xi0))
+            elif multipoles == '2':
+                datavec = np.concatenate((datavec, xi2))
+            elif multipoles == '4':
+                datavec = np.concatenate((datavec, xi4))
+            else:
+                raise ValueError('Unrecognized input argument '
+                                 'for the multipole moments.')
+
+        mock_datavec.append(datavec)
+
+    mock_datavec = np.asarray(mock_datavec)
+    cov = covariance_matrix(mock_datavec)
+
+    return cov
