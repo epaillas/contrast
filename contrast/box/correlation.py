@@ -7,7 +7,7 @@ def tpcf_monopole(
     data_filename1, output_filename,
     box_size, dim1_min, dim1_max,
     dim1_nbin, ngrid, data_filename2=None,
-    nthreads=1
+    nthreads=1, log_file=False
 ):
     '''
     Two-point correlation function as a function of the radial
@@ -66,8 +66,11 @@ def tpcf_monopole(
         str(nthreads)
     ]
 
-    log_filename = '{}.log'.format(output_filename)
-    log = open(log_filename, 'w+')
+    if log_file:
+        log_filename = '{}.log'.format(output_filename)
+        log = open(log_filename, 'w+')
+    else:
+        log = None
     subprocess.call(cmd, stdout=log, stderr=log)
 
     # open output file
