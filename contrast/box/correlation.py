@@ -7,9 +7,10 @@ def tpcf_monopole(
     data_filename1, output_filename,
     box_size, dim1_min, dim1_max,
     dim1_nbin, ngrid, data_filename2=None,
-    nthreads=1, log_file=False
+    nthreads=1, log_file=False, use_weights=False,
+    data_fileformat='unformatted'
 ):
-    '''
+    """
     Two-point correlation function as a function of the radial
     pairwise separation r.
 
@@ -44,7 +45,13 @@ def tpcf_monopole(
                  nthreads: optional, int, defaults to 1
                  Number of threads for parallelization.
 
-    '''
+                 use_weights: optional, boolean, defaults to False
+                 Whether to use weights provided in catalogue file.
+
+                 data_fileformat: optional, str, defaults to 'unformatted'
+                 Format of the data catalogues. See docs for more information.
+
+    """
 
     # if no second data file is provided, assume it
     # is an autocorrelation function.
@@ -56,6 +63,11 @@ def tpcf_monopole(
         if not path.isfile(filename):
             raise FileNotFoundError('{} does not exist.'.format(filename))
 
+    if use_weights:
+        use_weights = 1
+    else:
+        use_weights = 0
+
     binpath = path.join(path.dirname(__file__),
                         'bin', 'tpcf_monopole.exe')
 
@@ -63,7 +75,7 @@ def tpcf_monopole(
         binpath, data_filename1, data_filename2,
         output_filename, str(box_size), str(dim1_min),
         str(dim1_max), str(dim1_nbin), str(ngrid),
-        str(nthreads)
+        str(nthreads), str(use_weights), data_fileformat
     ]
 
     if log_file:

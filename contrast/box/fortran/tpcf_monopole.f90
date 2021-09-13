@@ -14,7 +14,7 @@ program tpcf
     integer*8 :: ipx, ipy, ipz, ndif
     integer*8 :: ngrid
     integer*8 :: end, beginning, rate
-    integer*4 :: nthreads
+    integer*4 :: nthreads, use_weights
     
     integer*8, dimension(:, :, :), allocatable :: lirst
     integer*8, dimension(:), allocatable :: ll
@@ -26,12 +26,13 @@ program tpcf
     character(20), external :: str
     character(len=500) :: data_filename1, data_filename2, output_filename, nthreads_char
     character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char, box_char
+    character(len=10) :: use_weights_char, data_fileformat
 
     logical :: has_velocity1, has_velocity2
     logical :: debug = .true.
     
     if (debug) then
-      if (iargc() .lt. 9) then
+      if (iargc() .lt. 11) then
           write(*,*) 'Some arguments are missing.'
           write(*,*) '1) data_filename'
           write(*,*) '2) data_filename_2'
@@ -42,6 +43,8 @@ program tpcf
           write(*,*) '7) dim1_nbin'
           write(*,*) '8) ngrid'
           write(*,*) '9) nthreads'
+          write(*,*) '10) use_weights'
+          write(*,*) '11) data_fileformat'
           write(*,*) ''
           stop
         end if
@@ -58,6 +61,8 @@ program tpcf
     call get_command_argument(number=7, value=dim1_nbin_char)
     call get_command_argument(number=8, value=ngrid_char)
     call get_command_argument(number=9, value=nthreads_char)
+    call get_command_argument(number=10, value=use_weights_format)
+    call get_command_argument(number=11, value=data_fileformat)
     
     read(box_char, *) boxsize
     read(dim1_min_char, *) dim1_min
@@ -65,6 +70,7 @@ program tpcf
     read(dim1_nbin_char, *) dim1_nbin
     read(ngrid_char, *) ngrid
     read(nthreads_char, *) nthreads
+    read(use_weights_char, *) use_weights
 
     if (debug) then
       write(*,*) '-----------------------'
@@ -80,6 +86,8 @@ program tpcf
       write(*, *) 'dim1_nbin: ', trim(dim1_nbin_char)
       write(*, *) 'ngrid: ', trim(ngrid_char)
       write(*, *) 'nthreads: ', trim(nthreads_char)
+      write(*, *) 'use_weights: ', trim(use_weights_char)
+      write(*, *) 'data_fileformat: ', trim(dat_fileformat)
       write(*,*) ''
     end if
 
