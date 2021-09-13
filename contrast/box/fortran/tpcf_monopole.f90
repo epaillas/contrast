@@ -28,7 +28,6 @@ program tpcf
     character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char, box_char
     character(len=10) :: use_weights_char, data_fileformat
 
-    logical :: has_velocity1, has_velocity2
     logical :: debug = .true.
     
     if (debug) then
@@ -94,19 +93,19 @@ program tpcf
     ! read tracers file
         if (trim(tracers_fileformat) == 'ascii') then
             if (use_weights == 1) then
-                call read_catalogue_type2(data_filename1, data1, weight1, ndata1, has_velocity1)
-                call read_catalogue_type2(data_filename2, data2, weight2, ndata2, has_velocity2)
+                call read_catalogue_type2(data_filename1, data1, weight1, ndata1)
+                call read_catalogue_type2(data_filename2, data2, weight2, ndata2)
             else
-                call read_catalogue_type1(data_filename1, data1, weight1, ndata1, has_velocity1)
-                call read_catalogue_type1(data_filename2, data2, weight2, ndata2, has_velocity2)
+                call read_catalogue_type1(data_filename1, data1, weight1, ndata1)
+                call read_catalogue_type1(data_filename2, data2, weight2, ndata2)
             end if
         else
             if (use_weights == 1) then
-                call read_catalogue_type6(data_filename1, data1, weight1, ndata1, has_velocity1)
-                call read_catalogue_type6(data_filename2, data2, weight2, ndata2, has_velocity2)
+                call read_catalogue_type6(data_filename1, data1, weight1, ndata1)
+                call read_catalogue_type6(data_filename2, data2, weight2, ndata2)
             else
-                call read_catalogue_type5(data_filename1, data1, weight1, ndata1, has_velocity1)
-                call read_catalogue_type5(data_filename2, data2, weight2, ndata2, has_velocity2)
+                call read_catalogue_type5(data_filename1, data1, weight1, ndata1)
+                call read_catalogue_type5(data_filename2, data2, weight2, ndata2)
             end if
         end if
 
