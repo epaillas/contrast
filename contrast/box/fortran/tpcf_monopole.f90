@@ -27,7 +27,7 @@ program tpcf
     character(len=500) :: data_filename1, data_filename2, output_filename, nthreads_char
     character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char, box_char
 
-    logical :: has_velocity
+    logical :: has_velocity1, has_velocity2
     logical :: debug = .true.
     
     if (debug) then
@@ -83,8 +83,25 @@ program tpcf
       write(*,*) ''
     end if
 
-    call read_unformatted(data_filename1, data1, weight1, ndata1, has_velocity)
-    call read_unformatted(data_filename2, data2, weight2, ndata2, has_velocity)
+    ! read tracers file
+        if (trim(tracers_fileformat) == 'ascii') then
+            if (use_weights == 1) then
+                call read_catalogue_type2(data_filename1, data1, weight1, ndata1, has_velocity1)
+                call read_catalogue_type2(data_filename2, data2, weight2, ndata2, has_velocity2)
+            else
+                call read_catalogue_type1(data_filename1, data1, weight1, ndata1, has_velocity1)
+                call read_catalogue_type1(data_filename2, data2, weight2, ndata2, has_velocity2)
+            end if
+        else
+            if (use_weights == 1) then
+                call read_catalogue_type6(data_filename1, data1, weight1, ndata1, has_velocity1)
+                call read_catalogue_type6(data_filename2, data2, weight2, ndata2, has_velocity2)
+            else
+                call read_catalogue_type5(data_filename1, data1, weight1, ndata1, has_velocity1)
+                call read_catalogue_type5(data_filename2, data2, weight2, ndata2, has_velocity2)
+            end if
+        end if
+
     call linked_list(data2, boxsize, ngrid, ll, lirst, rgrid)
     call binning(dim1_min, dim1_max, dim1_nbin, rbin, rbin_edges, rwidth)
 
