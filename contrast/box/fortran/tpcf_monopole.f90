@@ -60,7 +60,7 @@ program tpcf
     call get_command_argument(number=7, value=dim1_nbin_char)
     call get_command_argument(number=8, value=ngrid_char)
     call get_command_argument(number=9, value=nthreads_char)
-    call get_command_argument(number=10, value=use_weights_format)
+    call get_command_argument(number=10, value=use_weights_char)
     call get_command_argument(number=11, value=data_fileformat)
     
     read(box_char, *) boxsize
