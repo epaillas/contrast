@@ -86,12 +86,12 @@ program tpcf
       write(*, *) 'ngrid: ', trim(ngrid_char)
       write(*, *) 'nthreads: ', trim(nthreads_char)
       write(*, *) 'use_weights: ', trim(use_weights_char)
-      write(*, *) 'data_fileformat: ', trim(dat_fileformat)
+      write(*, *) 'data_fileformat: ', trim(data_fileformat)
       write(*,*) ''
     end if
 
     ! read tracers file
-        if (trim(tracers_fileformat) == 'ascii') then
+        if (trim(data_fileformat) == 'ascii') then
             if (use_weights == 1) then
                 call read_catalogue_type2(data_filename1, data1, weight1, ndata1)
                 call read_catalogue_type2(data_filename2, data2, weight2, ndata2)
