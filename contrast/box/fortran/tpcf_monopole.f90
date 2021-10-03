@@ -25,8 +25,8 @@ program tpcf
   
     character(20), external :: str
     character(len=500) :: data_filename1, data_filename2, output_filename, nthreads_char
-    character(len=10) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char, box_char
-    character(len=10) :: use_weights_char, data_fileformat
+    character(len=20) :: dim1_max_char, dim1_min_char, dim1_nbin_char, ngrid_char, box_char
+    character(len=20) :: use_weights_char, data_fileformat
 
     logical :: debug = .true.
     
