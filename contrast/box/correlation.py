@@ -1,411 +1,84 @@
-import subprocess
+from julia.api import Julia
 from os import path
 import numpy as np
 
 
 def tpcf_monopole(
-    data_filename1, output_filename,
-    box_size, dim1_min, dim1_max,
-    dim1_nbin, ngrid, data_filename2=None,
-    nthreads=1, log_file=False, use_weights=False,
-    data_fileformat='unformatted'
+    positions1, rbins, 
+    box_size, positions2=None
 ):
-    """
-    Two-point correlation function as a function of the radial
-    pairwise separation r.
+    # import Julia modules
+    jl = Julia(compiled_modules=False)
+    from julia import Main
 
-    Parameters:  data_filename1: str
-                 Name of the file containing the data catalogue.
+    module_path = path.join(path.dirname(__file__),
+                        'fastmodules', 'paircounts_r.jl')
 
-                 output_filename: str
-                 Name of the output file that will contain the
-                 correlation function.
+    jl.eval(f'include("{module_path}")')
 
-                 box_size: float
-                 Size of the simulation box.
-
-                 dim1_min: float
-                 Minimum value for the radial binning.
-
-                 dim1_max: float
-                 Maximum value for the radial binning.
-
-                 dim1_nbin: float
-                 Number of radial bins.
-
-                 ngrid: int
-                 Number of cell divisions to speed up calculations.
-                 It has to be a divisor of box_size (e.g. 100 for a
-                 1000 Mpc/h box).
-
-                 data_filename2: optional, str
-                 Name of the file containing a second data catalogue
-                 to perform a cross-correlation function.
-
-                 nthreads: optional, int, defaults to 1
-                 Number of threads for parallelization.
-
-                 use_weights: optional, boolean, defaults to False
-                 Whether to use weights provided in catalogue file.
-
-                 data_fileformat: optional, str, defaults to 'unformatted'
-                 Format of the data catalogues. See docs for more information.
-
-    """
-
-    # if no second data file is provided, assume it
+    # if no second positions are provided, assume it
     # is an autocorrelation function.
-    if data_filename2 is None:
-        data_filename2 = data_filename1
+    if positions2 is None:
+        positions2 = positions1
 
-    # check if files exist
-    for filename in [data_filename1, data_filename2]:
-        if not path.isfile(filename):
-            raise FileNotFoundError('{} does not exist.'.format(filename))
+    npos1 = len(positions1)
+    npos2 = len(positions2)
 
-    if use_weights:
-        use_weights = 1
-    else:
-        use_weights = 0
+    # add this so that Julia can recognize these varaibles
+    Main.positions1 = positions1.T
+    Main.positions2 = positions2.T
+    Main.box_size = box_size
+    Main.rbins = rbins
 
-    binpath = path.join(path.dirname(__file__),
-                        'bin', 'tpcf_monopole.exe')
+    D1D2 = jl.eval("count_pairs_r(positions1, positions2, box_size, rbins)") 
 
-    cmd = [
-        binpath, data_filename1, data_filename2,
-        output_filename, str(box_size), str(dim1_min),
-        str(dim1_max), str(dim1_nbin), str(ngrid),
-        str(nthreads), str(use_weights), data_fileformat
-    ]
+    mean_density = len(positions2) / (box_size**3)
+    R1R2 = np.zeros(len(D1D2))
 
-    if log_file:
-        log_filename = '{}.log'.format(output_filename)
-        log = open(log_filename, 'w+')
-    else:
-        log = None
-    subprocess.call(cmd, stdout=log, stderr=log)
+    for i in range(len(rbins) - 1):
+        bin_volume = 4 / 3 * np.pi * (rbins[i+1]**3 - rbins[i]**3)
+        R1R2[i] = bin_volume * mean_density * npos1
 
-    # open output file
-    data = np.genfromtxt(output_filename)
-    r = data[:, 0]
-    corr = data[:, 1]
+    delta_r = D1D2 / R1R2 - 1
 
-    return r, corr
+    return delta_r
 
-
-def tpcf_monopole_2d(
-  data_filename1, output_filename,
-  box_size, dim1_min, dim1_max,
-  dim1_nbin, ngrid, data_filename2=None,
-  nthreads=1
+def projected_tpcf(
+    positions1, rbins, 
+    box_size, positions2=None
 ):
-    '''
-    Projected two-point correlation function as a function of the
-    radial pairwise separation r.
+    # import Julia modules
+    jl = Julia(compiled_modules=False)
+    from julia import Main
 
-    Parameters:  data_filename1: str
-                 Name of the file containing the data catalogue.
+    module_path = path.join(path.dirname(__file__),
+                        'fastmodules', 'paircounts_r.jl')
 
-                 output_filename: str
-                 Name of the output file that will contain the
-                 correlation function.
+    jl.eval(f'include("{module_path}")')
 
-                 box_size: float
-                 Size of the simulation box.
-
-                 dim1_min: float
-                 Minimum value for the radial binning.
-
-                 dim1_max: float
-                 Maximum value for the radial binning.
-
-                 dim1_nbin: float
-                 Number of radial bins.
-
-                 ngrid: int
-                 Number of cell divisions to speed up calculations.
-                 It has to be a divisor of box_size (e.g. 100 for a
-                 1000 Mpc/h box).
-
-                 data_filename2: optional, str
-                 Name of the file containing a second data catalogue
-                 to perform a cross-correlation function.
-
-                 nthreads: optional, int, defaults to 1
-                 Number of threads for parallelization.
-
-    '''
-
-    # if no second data file is provided, assume it
+    # if no second positions are provided, assume it
     # is an autocorrelation function.
-    if data_filename2 is None:
-        data_filename2 = data_filename1
+    if positions2 is None:
+        positions2 = positions1
 
-    # check if files exist
-    for filename in [data_filename1, data_filename2]:
-        if not path.isfile(filename):
-            raise FileNotFoundError('{} does not exist.'.format(filename))
+    npos1 = len(positions1)
+    npos2 = len(positions2)
 
-    binpath = path.join(path.dirname(__file__),
-                        'bin', 'tpcf_monopole_2d.exe')
+    # add this so that Julia can recognize these varaibles
+    Main.positions1 = positions1.T
+    Main.positions2 = positions2.T
+    Main.box_size = box_size
+    Main.rbins = rbins
 
-    cmd = [
-        binpath, data_filename1, data_filename2,
-        output_filename, str(box_size), str(dim1_min),
-        str(dim1_max), str(dim1_nbin), str(ngrid),
-        str(nthreads)
-    ]
+    D1D2 = jl.eval("count_pairs_2d_r(positions1, positions2, box_size, rbins)") 
 
-    log_filename = '{}.log'.format(output_filename)
-    log = open(log_filename, 'w+')
-    subprocess.call(cmd, stdout=log, stderr=log)
+    mean_density = len(positions2) / (box_size**2)
+    R1R2 = np.zeros(len(D1D2))
 
-    # open output file
-    data = np.genfromtxt(output_filename)
-    r = data[:, 0]
-    corr = data[:, 1]
+    for i in range(len(rbins) - 1):
+        bin_volume = np.pi * (rbins[i+1]**2 - rbins[i]**2)
+        R1R2[i] = bin_volume * mean_density * npos1
 
-    return r, corr
+    delta_r = D1D2 / R1R2 - 1
 
-
-def tpcf_rmu(
-    data_filename1, output_filename,
-    box_size, dim1_min, dim1_max,
-    dim1_nbin, ngrid, data_filename2=None,
-    dim2_min=-1, dim2_max=1, dim2_nbin=80,
-    nthreads=1
-):
-    '''
-    Two-point correlation function binned in r and mu,
-    where r is the pairwise radial separation and mu is
-    the cosine of the angle between the pair separation and
-    the line of sight.
-
-    Parameters:  data_filename1: str
-                 Name of the file containing the data catalogue.
-
-                 output_filename: str
-                 Name of the output file that will contain the
-                 correlation function.
-
-                 box_size: float
-                 Size of the simulation box.
-
-                 dim1_min: float
-                 Minimum value for the radial binning.
-
-                 dim1_max: float
-                 Maximum value for the radial binning.
-
-                 dim1_nbin: float
-                 Number of radial bins.
-
-                 ngrid: int
-                 Number of cell divisions to speed up calculations.
-                 It has to be a divisor of box_size (e.g. 100 for a
-                 1000 Mpc/h box).
-
-                 data_filename2: optional, str
-                 Name of the file containing a second data catalogue
-                 to perform a cross-correlation function.
-
-                 dim2_min: optional, float, defaults to -1
-                 Minimum value for the mu binning.
-
-                 dim2_max: optional, float, defaults to 1
-                 Maximum value for the mu binning.
-
-                 dim2_nbin: optional, int, defaults to 80
-                 Number of mu bins.
-
-                 nthreads: optional, int, defaults to 1
-                 Number of threads for parallelization.
-
-    '''
-
-    # if no second data file is provided, assume it
-    # is an autocorrelation function.
-    if data_filename2 is None:
-        data_filename2 = data_filename1
-
-    # check if files exist
-    for filename in [data_filename1, data_filename2]:
-        if not path.isfile(filename):
-            raise FileNotFoundError('{} does not exist.'.format(filename))
-
-    binpath = path.join(path.dirname(__file__),
-                        'bin', 'tpcf_rmu.exe')
-
-    cmd = [
-        binpath, data_filename1, data_filename2,
-        output_filename, str(box_size), str(dim1_min),
-        str(dim1_max), str(dim1_nbin), str(dim2_min),
-        str(dim2_max), str(dim2_nbin), str(ngrid),
-        str(nthreads)
-    ]
-
-    log_filename = '{}.log'.format(output_filename)
-    log = open(log_filename, 'w+')
-    subprocess.call(cmd, stdout=log, stderr=log)
-
-    # TODO return tpcf array
-
-    return
-
-
-def mean_radial_velocity_monopole(
-    data_filename1, output_filename,
-    box_size, dim1_min, dim1_max,
-    dim1_nbin, ngrid, data_filename2=None,
-    dim2_min=-1, dim2_max=1, dim2_nbin=80,
-    nthreads=1
-):
-    '''
-    Mean radial velocity as a function of the radial pairwise
-    separation r.
-
-    Parameters:  data_filename1: str
-                 Name of the file containing the data catalogue.
-
-                 output_filename: str
-                 Name of the output file that will contain the
-                 output profile.
-
-                 box_size: float
-                 Size of the simulation box.
-
-                 dim1_min: float
-                 Minimum value for the radial binning.
-
-                 dim1_max: float
-                 Maximum value for the radial binning.
-
-                 dim1_nbin: float
-                 Number of radial bins.
-
-                 ngrid: int
-                 Number of cell divisions to speed up calculations
-                 It has to be a divisor of box_size (e.g. 100 for a
-                 1000 Mpc/h box).
-
-                 data_filename2: optional, str
-                 Name of the file containing a second data catalogue
-                 to perform a cross-correlation function.
-
-                 nthreads: optional, int, defaults to 1
-                 Number of threads for parallelization.
-
-    '''
-
-    # if no second data file is provided, assume it
-    # is an autocorrelation function.
-    if data_filename2 is None:
-        data_filename2 = data_filename1
-
-    # check if files exist
-    for filename in [data_filename1, data_filename2]:
-        if not path.isfile(filename):
-            raise FileNotFoundError('{} does not exist.'.format(filename))
-
-    binpath = path.join(path.dirname(__file__),
-                        'bin', 'mean_radial_velocity_monopole.exe')
-
-    cmd = [
-        binpath, data_filename1, data_filename2,
-        output_filename, str(box_size), str(dim1_min),
-        str(dim1_max), str(dim1_nbin), str(ngrid),
-        str(nthreads)
-    ]
-
-    log_filename = '{}.log'.format(output_filename)
-    log = open(log_filename, 'w+')
-    subprocess.call(cmd, stdout=log, stderr=log)
-
-    # TODO return radial velocity array
-
-    return
-
-
-def std_los_velocity_rmu(
-    data_filename1, output_filename,
-    box_size, dim1_min, dim1_max,
-    dim1_nbin, ngrid, data_filename2=None,
-    dim2_min=-1, dim2_max=1, dim2_nbin=80,
-    nthreads=1
-):
-    '''
-    Line-of-sight velocity dispersion inned in r and mu,
-    where r is the pairwise radial separation and mu is
-    the cosine of the angle between the pair separation and
-    the line of sight.
-
-    Parameters:  data_filename1: str
-                 Name of the file containing the data catalogue.
-
-                 output_filename: str
-                 Name of the output file that will contain the
-                 velocity profile
-
-                 box_size: float
-                 Size of the simulation box.
-
-                 dim1_min: float
-                 Minimum value for the radial binning.
-
-                 dim1_max: float
-                 Maximum value for the radial binning.
-
-                 dim1_nbin: float
-                 Number of radial bins.
-
-                 ngrid: int
-                 Number of cell divisions to speed up calculations.
-                 It has to be a divisor of box_size (e.g. 100 for a
-                 1000 Mpc/h box).
-
-                 data_filename2: optional, str
-                 Name of the file containing a second data catalogue
-                 to perform a cross-correlation function.
-
-                 dim2_min: optional, float, defaults to -1
-                 Minimum value for the mu binning.
-
-                 dim2_max: optional, float, defaults to 1
-                 Maximum value for the mu binning.
-
-                 dim2_nbin: optional, int, defaults to 80
-                 Number of mu bins.
-
-                 nthreads: optional, int, defaults to 1
-                 Number of threads for parallelization.
-
-    '''
-
-    # if no second data file is provided, assume it
-    # is an autocorrelation function.
-    if data_filename2 is None:
-        data_filename2 = data_filename1
-
-    # check if files exist
-    for filename in [data_filename1, data_filename2]:
-        if not path.isfile(filename):
-            raise FileNotFoundError('{} does not exist.'.format(filename))
-
-    binpath = path.join(path.dirname(__file__),
-                        'bin', 'std_los_velocity_rmu.exe')
-
-    cmd = [
-        binpath, data_filename1, data_filename2,
-        output_filename, str(box_size), str(dim1_min),
-        str(dim1_max), str(dim1_nbin), str(dim2_min),
-        str(dim2_max), str(dim2_nbin), str(ngrid),
-        str(nthreads)
-    ]
-
-    log_filename = '{}.log'.format(output_filename)
-    log = open(log_filename, 'w+')
-    subprocess.call(cmd, stdout=log, stderr=log)
-
-    # TODO return velocity dispersion array
-
-    return
+    return delta_r
