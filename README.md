@@ -6,9 +6,9 @@ The interface of the code is written in Python 3, while the engine that takes ca
 
 ### Julia requirements
 
-    - `CellListMap` 
-    - `StaticArrays` 
-    - `LinearAlgebra` 
+  - `CellListMap` 
+  - `StaticArrays` 
+  - `LinearAlgebra` 
 
 You will also require the following Python packages:
 
