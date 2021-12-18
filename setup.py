@@ -1,21 +1,24 @@
-from distutils.core import setup
+"""A setuptools based setup module.
+See:
+https://packaging.python.org/guides/distributing-packages-using-setuptools/
+https://github.com/pypa/sampleproject
+"""
+
+# Always prefer setuptools over distutils
+from setuptools import setup, find_packages
+import pathlib
 
 setup(
-    name='Contrast',
-    author="Enrique Paillas",
-    author_email="enrique.paillas@uwaterloo.ca",
-    version='0.1dev',
-    url='https://github.com/epaillas/contrast',
-    packages=['contrast'],
-    license='Creative Commons Attribution-Noncommercial-Share Alike license',
-    long_description=open('README.md').read(),
-
+    name='contrast',
+    version='0.0.1',
+    description='COrrelatioN funcTions foR ASTrophysics',
+    url='https://github.com/epaillas/contrast', 
+    author='Enrique Paillas',
+    author_email='enrique.paillas@uwaterloo.ca',
+    packages=find_packages(),
+    python_requires='>=3.6, <4',
     install_requires=[
-                    'julia'
-                    'numpy',
-                    'jupyter',
-                    'matplotlib',
-                    ],
-
-    zip_safe=False
+        'numpy',
+        'julia'
+    ]
 )
