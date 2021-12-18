@@ -1,16 +1,26 @@
 ### CONTRAST (COrrelatioN funcTions foR ASTrophysics)
 
-A package for the calculation of galaxy clustering statistics. 
+A  package for the calculation of galaxy clustering statistics, including correlation functions and velocity statistics.
 
-### Installation:
+The interface of the code is written in Python 3, while the engine that takes care of the intensive calculations is written in the Julia programming language, so you must have it installed along with the following Julia packages:
 
-Under the main directory, compile the package with `python setup.py build`, and then install it with `python setup.py install`.
+### Julia requirements
 
-Requirements: 
-  - `Python` >= 3.0.0
-  - `GCC` >= 4.2.1
-  - `Scipy` >= 1.5.0
+    - `CellListMap`
+    - `StaticArrays`
+    - `LinearAlgebra`
 
-Earlier versions of those software packages might work as well, but they have not been tested.
+You will also require the following Python packages:
 
-Examples of the usage of the package can be found under the `examples/` directory.
+### Python requirements
+
+  - `pyjulia` >= 0.5.7
+  - `numpy` >= 1.20.1
+
+### Installation
+
+Under the main directory, install the package with `python setup.py install`. 
+
+### Examples
+
+Example notebooks can be found under the `examples/` directory.
