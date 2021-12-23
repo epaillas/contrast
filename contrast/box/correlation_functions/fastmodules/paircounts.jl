@@ -97,14 +97,14 @@ function count_pairs_rmu(
         (x, y, i, j, d2, D1D2) ->
         _count_pairs_rmu!(x, y, i, j, d2, rbins, mubins, com, D1D2),
         D1D2, box, cl,
-        parallel=true
+        parallel=true,
+        reduce=reduce_matrix
     )
     return D1D2
 end
 
 
-function reduce(output::Vector,output_threaded)
-    print(output_threaded[1])
+function reduce_matrix(output, output_threaded)
     output = output_threaded[1]
     for i in 2:length(output_threaded)
         output .+= output_threaded[i]
