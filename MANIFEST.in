@@ -1,1 +1,1 @@
-recursive-include contrast/box/fastmodules *
+recursive-include contrast/box/ *
