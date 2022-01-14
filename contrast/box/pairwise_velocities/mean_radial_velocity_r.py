@@ -5,7 +5,7 @@ from os import path, environ
 def mean_radial_velocity_r(
     positions1, velocities1, rbins, 
     box_size, positions2=None, velocities2=None,
-    nthreads=1
+    nthreads=1, return_paircounts=False
 ):
 
     environ['JULIA_NUM_THREADS'] = f'{nthreads}'
@@ -37,5 +37,8 @@ def mean_radial_velocity_r(
 
     v_r = V1V2 / D1D2
 
-    return v_r
+    if return_paircounts:
+        return v_r, V1V2, D1D2
+    else:
+        return v_r
 
