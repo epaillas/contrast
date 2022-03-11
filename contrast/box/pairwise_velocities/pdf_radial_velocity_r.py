@@ -7,6 +7,9 @@ def pdf_radial_velocity_r(
     boxsize, positions2=None, velocities2=None,
     nthreads=1, return_paircounts=False
 ):
+    if hasattr(boxsize, "__len__"):
+        raise ValueError("Non-cubic boxes not yet implemented for velocities.")
+
     environ['JULIA_NUM_THREADS'] = f'{nthreads}'
     jl = Julia(compiled_modules=False)
     from julia import Main

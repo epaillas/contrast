@@ -7,6 +7,12 @@ def tpcf_r(
     positions1, rbins, boxsize, 
     positions2=None, nthreads=1, return_paircounts=False
 ):
+
+    if not hasattr(boxsize, "__len__"):
+        boxsize = np.array([boxsize, boxsize, boxsize])
+    else:
+        boxsize = np.asarray(boxsize)
+
     environ['JULIA_NUM_THREADS'] = f'{nthreads}'
     jl = Julia(compiled_modules=False)
     from julia import Main
@@ -29,7 +35,7 @@ def tpcf_r(
 
     D1D2 = jl.eval("count_pairs_r(positions1, positions2, boxsize, rbins)") 
 
-    mean_density = len(positions2) / (boxsize**3)
+    mean_density = len(positions2) / (boxsize[0]*boxsize[1]*boxsize[2])
     D1R2 = np.zeros(len(D1D2))
 
     for i in range(len(rbins) - 1):

@@ -18,11 +18,12 @@ function count_pairs_r(
 )
     positions1 = convert(Array{Float64}, positions1)
     positions2 = convert(Array{Float64}, positions2)
+    boxsize = convert(Array{Float64}, boxsize)
     rbins = convert(Array{Float64}, rbins)
     D1D2 = zeros(Int, length(rbins) - 1)
     
     rmax = maximum(rbins)
-    Lbox = [boxsize, boxsize, boxsize]
+    Lbox = [boxsize[1], boxsize[2], boxsize[3]]
     box = Box(Lbox, rmax)
 
     cl = CellList(positions1, positions2, box)
@@ -43,12 +44,12 @@ function count_pairs_2d_r(
 )
     positions1 = convert(Array{Float64}, positions1)
     positions2 = convert(Array{Float64}, positions2)
-
+    boxsize = convert(Array{Float64}, boxsize)
     rbins = convert(Array{Float64}, rbins)
     D1D2 = zeros(Int, length(rbins) - 1)
     
     rmax = maximum(rbins)
-    Lbox = [boxsize, boxsize]
+    Lbox = [boxsize[1], boxsize[2]]
     box = Box(Lbox, rmax)
 
     cl = CellList(positions1, positions2, box)
@@ -82,13 +83,15 @@ function count_pairs_rmu(
 
     positions1 = convert(Array{Float64}, positions1)
     positions2 = convert(Array{Float64}, positions2)
+    boxsize = convert(Array{Float64}, boxsize)
     rbins = convert(Array{Float64}, rbins)
     mubins = convert(Array{Float64}, mubins)
     com = [0, 0, 1]
     D1D2 = zeros(Int, length(rbins) - 1, length(mubins) - 1)
     
     rmax = maximum(rbins)
-    Lbox = [boxsize, boxsize, boxsize]
+    Lbox = [boxsize[1], boxsize[2], boxsize[3]]
+
     box = Box(Lbox, rmax)
 
     cl = CellList(positions1, positions2, box)
