@@ -34,7 +34,7 @@ end
 
 
 function mean_radial_velocity_r(
-    positions1, positions2, velocities1, velocities2, box_size, rbins
+    positions1, positions2, velocities1, velocities2, boxsize, rbins
 )
     positions1 = convert(Array{Float64}, positions1)
     positions2 = convert(Array{Float64}, positions2)
@@ -48,7 +48,7 @@ function mean_radial_velocity_r(
     )
 
     rmax = maximum(rbins)
-    Lbox = [box_size, box_size, box_size]
+    Lbox = [boxsize, boxsize, boxsize]
     box = Box(Lbox, rmax)
 
     cl = CellList(positions1, positions2, box)
@@ -68,7 +68,7 @@ end
 
 
 function pdf_radial_velocity_r(
-    positions1, positions2, velocities1, velocities2, box_size, rbins
+    positions1, positions2, velocities1, velocities2, boxsize, rbins
 )
     positions1 = convert(Array{Float64}, positions1)
     positions2 = convert(Array{Float64}, positions2)
@@ -83,7 +83,7 @@ function pdf_radial_velocity_r(
     )
 
     rmax = maximum(rbins)
-    Lbox = [box_size, box_size, box_size]
+    Lbox = [boxsize, boxsize, boxsize]
     box = Box(Lbox, rmax)
 
     cl = CellList(positions1, positions2, box)

@@ -5,7 +5,7 @@ from julia.api import Julia
 
 def tpcf_rmu(
     positions1, rbins, mubins, 
-    box_size, positions2=None, nthreads=1,
+    boxsize, positions2=None, nthreads=1,
     return_paircounts=False
 ):
     environ['JULIA_NUM_THREADS'] = f'{nthreads}'
@@ -25,13 +25,13 @@ def tpcf_rmu(
     # add this so that Julia can recognize these varaibles
     Main.positions1 = positions1.T
     Main.positions2 = positions2.T
-    Main.box_size = box_size
+    Main.boxsize = boxsize
     Main.rbins = rbins
     Main.mubins = mubins
 
-    D1D2 = jl.eval("count_pairs_rmu(positions1, positions2, box_size, rbins, mubins)") 
+    D1D2 = jl.eval("count_pairs_rmu(positions1, positions2, boxsize, rbins, mubins)") 
 
-    mean_density = len(positions2) / (box_size**3)
+    mean_density = len(positions2) / (boxsize**3)
     D1R2 = np.zeros(np.shape(D1D2))
 
     for i in range(len(rbins) - 1):

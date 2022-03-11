@@ -4,7 +4,7 @@ from os import path, environ
 
 def mean_radial_velocity_r(
     positions1, velocities1, rbins, 
-    box_size, positions2=None, velocities2=None,
+    boxsize, positions2=None, velocities2=None,
     nthreads=1, return_paircounts=False
 ):
 
@@ -30,10 +30,10 @@ def mean_radial_velocity_r(
     Main.positions2 = positions2.T
     Main.velocities1 = velocities1.T
     Main.velocities2 = velocities2.T
-    Main.box_size = box_size
+    Main.boxsize = boxsize
     Main.rbins = rbins
 
-    D1D2, V1V2 = jl.eval("mean_radial_velocity_r(positions1, positions2, velocities1, velocities2, box_size, rbins)") 
+    D1D2, V1V2 = jl.eval("mean_radial_velocity_r(positions1, positions2, velocities1, velocities2, boxsize, rbins)") 
 
     v_r = V1V2 / D1D2
 

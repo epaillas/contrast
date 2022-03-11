@@ -4,7 +4,7 @@ from julia.api import Julia
 
 
 def tpcf_r(
-    positions1, rbins, box_size, 
+    positions1, rbins, boxsize, 
     positions2=None, nthreads=1, return_paircounts=False
 ):
     environ['JULIA_NUM_THREADS'] = f'{nthreads}'
@@ -24,12 +24,12 @@ def tpcf_r(
     # add this so that Julia can recognize these varaibles
     Main.positions1 = positions1.T
     Main.positions2 = positions2.T
-    Main.box_size = box_size
+    Main.boxsize = boxsize
     Main.rbins = rbins
 
-    D1D2 = jl.eval("count_pairs_r(positions1, positions2, box_size, rbins)") 
+    D1D2 = jl.eval("count_pairs_r(positions1, positions2, boxsize, rbins)") 
 
-    mean_density = len(positions2) / (box_size**3)
+    mean_density = len(positions2) / (boxsize**3)
     D1R2 = np.zeros(len(D1D2))
 
     for i in range(len(rbins) - 1):
