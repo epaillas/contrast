@@ -3,21 +3,23 @@ using StaticArrays
 using LinearAlgebra
 
 
-function _count_pairs_r!(d2, rbins, counts)
+function _count_pairs_r!(i, j, d2, weights1, weights2, rbins, counts)
     d = sqrt.(d2)
     ibin = searchsortedfirst(rbins, d) - 1
     if ibin > 0
-        counts[ibin] += 1
+        counts[ibin] += weights1[i] * weights2[j]
     end
     return counts
 end 
 
 
 function count_pairs_r(
-    positions1, positions2, boxsize, rbins
+    positions1, positions2, weights1, weights2, boxsize, rbins
 )
     positions1 = convert(Array{Float64}, positions1)
     positions2 = convert(Array{Float64}, positions2)
+    weights1 = convert(Array{Float64}, weights1)
+    weights2 = convert(Array{Float64}, weights2)
     boxsize = convert(Array{Float64}, boxsize)
     rbins = convert(Array{Float64}, rbins)
     D1D2 = zeros(Int, length(rbins) - 1)
@@ -30,7 +32,7 @@ function count_pairs_r(
 
     map_pairwise!(
         (x, y, i, j, d2, D1D2) ->
-        _count_pairs_r!(d2, rbins, D1D2),
+        _count_pairs_r!(i, j, d2, weights1, weights2, rbins, D1D2),
         D1D2, box, cl,
         parallel=true
     )
